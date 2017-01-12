@@ -159,6 +159,8 @@ t.send(new HitBuilders.ScreenViewBuilder()
     .setCustomMetric(2,200));
 ```
 
+**自定义纬度和指标在 ScreenView, Event, Exception, Timing 上都能设置**
+
 ### 事件 Event
 
 事件可帮助你衡量用户与你的小程序中的互动式组件的互动情况，例如按钮点击等。  
