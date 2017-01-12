@@ -189,7 +189,7 @@ t.send(new HitBuilders.ExceptionBuilder()
 ```js
 t.send(new HitBuilders.TimingBuilder()
     .setCategory('计时器')
-    .setValue('63000')
+    .setValue(63000)
     .setVariable('用户注册')
     .setLabel('表单'));
 ```
