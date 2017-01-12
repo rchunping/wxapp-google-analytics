@@ -64,24 +64,6 @@ GoogleAnalytics.prototype.send = function (t, hit) {
         data[k] = hit[k];
     }
 
-    /*
-    if (hit.t == "screenview") {
-        if (hit.cd_arr.length > 0) {
-            var i;
-            for (i = 0; i < hit.cd_arr.length; i++) {
-                var cd = hit.cd_arr[i];
-                data["cd" + cd[0]] = cd[1];
-            }
-        }
-        if (hit.cm_arr.length > 0) {
-            var i;
-            for (i = 0; i < hit.cm_arr.length; i++) {
-                var cm = hit.cm_arr[i];
-                data["cm" + cm[0]] = cm[1];
-            }
-        }
-    */
-
     console.log(["ga.queue.push", data]);
 
     this.send_queue.push([data, new Date()]);
@@ -175,8 +157,8 @@ GoogleAnalytics.prototype._do_send = function () {
 GoogleAnalytics.prototype.getDefaultTracker = function () {
     return this.trackers[0];
 }
-GoogleAnalytics.prototype.newTracker = function (tid) {
-    var t = new Tracker(this, tid);
+GoogleAnalytics.prototype.newTracker = function (trackerID) {
+    var t = new Tracker(this, trackerID);
     this.trackers.push(t);
     return t;
 }
@@ -186,10 +168,11 @@ function Tracker(ga, tid) {
     this.tid = tid || "";
     this.screenName = "";
 }
-Tracker.prototype.setScreenName = function (sd) {
-    this.screenName = sd;
+Tracker.prototype.setScreenName = function (screenName) {
+    this.screenName = screenName;
     return this;
 }
+// @param Map<String,String> hit
 Tracker.prototype.send = function (hit) {
     this.ga.send(this, hit);
     return this;
@@ -256,21 +239,21 @@ function EventBuilder() {
 EventBuilder.prototype = Object.create(HitBuilder.prototype);
 EventBuilder.prototype.constructor = EventBuilder;
 
-EventBuilder.prototype.setCategory = function (c) {
-    this.hit.ec = c;
+EventBuilder.prototype.setCategory = function (category) {
+    this.hit.ec = category;
     return this;
 }
-EventBuilder.prototype.setAction = function (a) {
-    this.hit.ea = a;
+EventBuilder.prototype.setAction = function (action) {
+    this.hit.ea = action;
     return this;
 }
-EventBuilder.prototype.setLabel = function (l) {
-    this.hit.el = l;
+EventBuilder.prototype.setLabel = function (label) {
+    this.hit.el = label;
     return this;
 }
 // @param int
-EventBuilder.prototype.setValue = function (v) {
-    this.hit.ev = v;
+EventBuilder.prototype.setValue = function (value) {
+    this.hit.ev = value;
     return this;
 }
 // @papam bool
@@ -327,6 +310,7 @@ ExceptionBuilder.prototype.setDescription = function (description) {
     this.hit.exd = description;
     return this;
 }
+// @param bool is_fatal
 ExceptionBuilder.prototype.setFatal = function (is_fatal) {
     this.hit.exf = is_fatal ? 1 : 0;
     return this;
