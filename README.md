@@ -155,7 +155,7 @@ Page({
 t.send(new HitBuilders.ScreenViewBuilder()
     .setCustomDimension(1,"纬度1")
     .setCustomDimension(2,"纬度2")
-    .setCustomMetric(1,100)
+    .setCustomMetric(1,100.35)
     .setCustomMetric(2,200));
 ```
 
