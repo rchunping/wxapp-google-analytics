@@ -5,7 +5,7 @@
 
 #### 1. Google Analytics 设置
 
-在账号下新建媒体资源，跟踪内容选 `移动应用` ,得到 `跟踪ID (Tracker ID)`
+在账号下新建媒体资源，跟踪内容选 `移动应用` ,得到 `跟踪ID (Tracking ID)`
 
 #### 2. 在你的微信小程序项目添加 `ga.js` 文件
 
@@ -27,7 +27,7 @@ App({
             this.tracker = GoogleAnalytics.getInstance(this)
                             .setAppName('小程序名称')
                             .setAppVersion('小程序版本号')
-                            .newTracker('UA-XXXXXX-X'); //用你的 Tracker ID 代替
+                            .newTracker('UA-XXXXXX-X'); //用你的 Tracking ID 代替
         }
         return this.tracker;
     },
@@ -77,7 +77,7 @@ gaInstance.setAppName('小程序名称'); // 设置APP名称
 gaInstance.setAppVersion('小程序版本号'); //设置APP版本号，[可选]
 
 // 创建一个跟踪器 Tracker
-var tracker = gaInstance.newTracker('UA-XXXXXX-X'); // 参数是谷歌统计媒体资源中的 跟踪ID (Tracker ID)
+var tracker = gaInstance.newTracker('UA-XXXXXX-X'); // 参数是谷歌统计媒体资源中的 跟踪ID (Tracking ID)
 ```
 
 多数情况下我们只需要用一个跟踪器，因此建议在 `app.js` 中全局共享一个跟踪器:
@@ -115,7 +115,7 @@ Page({
         // 获取全局跟踪器
         var t = getApp().getTracker();
 
-        // 后续的所有统计上报数据都会使用这个屏幕名称。
+        // 后续的所有匹配数据都会使用这个屏幕名称。
         t.setScreenName('这是首页');
 
         // t.send(Hit) 上报数据
@@ -126,6 +126,11 @@ Page({
 
 ```
 
+### 匹配构建 HitBuilder
+
+用来构建一次匹配所需要的所有参数，`HitBuilder` 提供了所有匹配类型都需要的一些公共方法。   
+
+一般不需要直接使用 `HitBuilder` , 请根据实际匹配类型使用下面的 `ScreenViewBuilder`, `EventBuilder`, `ExceptionBuilder`, `TimingBuilder`
 
 
 ### 屏幕 ScreenView
@@ -159,7 +164,7 @@ t.send(new HitBuilders.ScreenViewBuilder()
     .setCustomMetric(2,200));
 ```
 
-**自定义纬度和指标在 ScreenView, Event, Exception, Timing 上都能设置**
+**提醒：** 自定义纬度和指标在所有 `HitBuilder` 上都能设置。
 
 ### 事件 Event
 
@@ -195,6 +200,45 @@ t.send(new HitBuilders.TimingBuilder()
     .setVariable('用户注册')
     .setLabel('表单'));
 ```
+
+### 会话管理
+
+默认的会话时长是30分钟，可以在谷歌分析媒体资源一级进行设置。你也可以在发送匹配时使用 `setNewSession` 方法来手动开始一个新会话。
+
+```js
+// Start a new session with the hit.
+t.send(new HitBuilders.ScreenViewBuilder()
+    .setNewSession()
+    .build());
+```
+
+**提醒：** 所有 `HitBuilder` 都支持手动开始新会话。
+
+### 用户ID （跨应用，跨设备跟踪）
+
+User ID用来进行跨应用和跨设备的同一用户跟踪，比如你可以把小程序用户的 <del>`OpenID` 或</del> `UnionID` 设置为 User ID。
+
+**你需要先在谷歌分析后台的媒体资源里面启用User ID跟踪功能。**
+
+要发送 User ID，请使用 `Measurement Protocol & 号语法` 和 `&uid` 参数名称来设置 `userId` 字段，如下例所示：
+
+```js
+  // You only need to set User ID on a tracker once. By setting it on the
+  // tracker, the ID will be sent with all subsequent hits.
+  t.set("&uid", '12345');
+
+  // This hit will be sent with the User ID value and be visible in
+  // User-ID-enabled views (profiles).
+  t.send(new HitBuilders.EventBuilder()
+      .setCategory("UX")
+      .setAction("User Sign In")
+      .build());
+```
+
+上面代码用到了 `&uid` 参数，所有 `Measurement Protocol & 号语法` 支持的参数可以去 [Measurement Protocol 参数参考](https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters) 查看。
+
+**提醒：** 这些 `&uid` 参数可以在 `Tracker` 级别设置，也可以在 `HitBuilder` 的单次匹配上设置。
+
 
 ## API参考
 

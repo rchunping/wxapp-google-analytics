@@ -41,17 +41,17 @@ GoogleAnalytics.prototype.setAppVersion = function (appVersion) {
 GoogleAnalytics.prototype.send = function (t, hit) {
     var ga = this;
 
-    // 基础字段
+    // 默认基础字段
     var data = {
         v: 1,
-        tid: t.tid,
+        //tid: t.hit.tid,
         cid: ga.cid,
         ds: "app",
         ul: ga.systemInfo.language,
         de: "UTF-8",
         sd: "24-bit",
         je: 0,
-        cd: t.screenName,
+        //cd: t.hit.cd,//screenName
         an: ga.appName,
         av: ga.appVersion,
         sr: ga.sr,
@@ -59,7 +59,12 @@ GoogleAnalytics.prototype.send = function (t, hit) {
         ua: ga.userAgent
     };
 
-    // 合并参数
+    // 合并tracker上的参数
+    for (var k in t.hit) {
+        data[k] = t.hit[k];
+    }
+
+    // 合并Builder上的参数
     for (var k in hit) {
         data[k] = hit[k];
     }
@@ -157,20 +162,75 @@ GoogleAnalytics.prototype._do_send = function () {
 GoogleAnalytics.prototype.getDefaultTracker = function () {
     return this.trackers[0];
 }
-GoogleAnalytics.prototype.newTracker = function (trackerID) {
-    var t = new Tracker(this, trackerID);
+GoogleAnalytics.prototype.newTracker = function (trackingID) {
+    var t = new Tracker(this, trackingID);
     this.trackers.push(t);
     return t;
 }
 
+// 支持Measurement Protocol“&”符号语法
+// 兼容兼容Android SDK中 .set('&uid','value') 的写法
+function hit_param_fix(paramName) {
+    return String(paramName).replace(/^&/, '');
+}
+
 function Tracker(ga, tid) {
     this.ga = ga;
-    this.tid = tid || "";
-    this.screenName = "";
+    this.hit = {
+        tid: tid || "", // tracking Id
+        cd: "" // screenName
+    };
+}
+Tracker.prototype.get = function (key) {
+    return this.hit[hit_param_fix(key)];
+}
+Tracker.prototype.set = function (key, value) {
+    this.hit[hit_param_fix(key)] = value;
+    return this;
+}
+// @param bool	
+Tracker.prototype.setAnonymizeIp = function (anonymize) {
+    return this.set("aip", anonymize ? 1 : 0);
+}
+Tracker.prototype.setAppId = function (appId) {
+    return this.set("aid", appId);
+}
+Tracker.prototype.setAppInstallerId = function (appInstallerId) {
+    return this.set("aiid", appInstallerId);
+}
+Tracker.prototype.setAppName = function (appName) {
+    return this.set("an", appName);
+}
+Tracker.prototype.setAppVersion = function (appVersion) {
+    return this.set("av", appVersion);
+}
+// 一般是UUID
+Tracker.prototype.setClientId = function (clientId) {
+    return this.set("cid", clientId);
+}
+Tracker.prototype.setEncoding = function (encoding) {
+    return this.set("de", encoding);
+}
+Tracker.prototype.setLanguage = function (language) {
+    return this.set("ul", language);
+}
+// 两个字母的国家代号，比如CN,US... 或者地理位置ID
+// https://developers.google.com/analytics/devguides/collection/protocol/v1/geoid
+Tracker.prototype.setLocation = function (location) {
+    return this.set("geoid", location);
+}
+// e.g. 24-bit
+Tracker.prototype.setScreenColors = function (screenColors) {
+    return this.set("sd", screenColors);
 }
 Tracker.prototype.setScreenName = function (screenName) {
-    this.screenName = screenName;
-    return this;
+    return this.set("cd", screenName);
+}
+Tracker.prototype.setScreenResolution = function (width, height) {
+    return this.set("sr", [width, height].join('x'));
+}
+Tracker.prototype.setViewportSize = function (viewportSize) {
+    return this.set("vp", viewportSize);
 }
 // @param Map<String,String> hit
 Tracker.prototype.send = function (hit) {
@@ -178,13 +238,30 @@ Tracker.prototype.send = function (hit) {
     return this;
 }
 
+
 // HitBuilder [基础类]
 function HitBuilder() {
     this.hit = {
-        t: "screenview", //default
+        t: "screenview", // default HitType
+        ni: 0            // [nonInteraction] default: 0
     };
     this.custom_dimensions = [];
     this.custom_metrics = [];
+}
+
+HitBuilder.prototype.get = function (paramName) {
+    return this.hit[hit_param_fix(paramName)];
+}
+HitBuilder.prototype.set = function (paramName, paramValue) {
+    this.hit[hit_param_fix(paramName)] = paramValue;
+    return this;
+}
+// @param Map<String,String> params
+HitBuilder.prototype.setAll = function (params) {
+    for (var k in params) {
+        this.set(k, params[k]);
+    }
+    return this;
 }
 // @param int index >= 1
 // @param String dimension
@@ -198,10 +275,44 @@ HitBuilder.prototype.setCustomMetric = function (index, metric) {
     this.custom_metrics.push([index, metric]);
     return this;
 }
+// 新开session
+HitBuilder.prototype.setNewSession = function () {
+    this.hit.sc = "start";
+    return this;
+}
+// 非互动匹配
+// @papam bool
+HitBuilder.prototype.setNonInteraction = function (nonInteraction) {
+    this.hit.ni = nonInteraction ? 1 : 0;
+    return this;
+}
+// @param String hitType
+HitBuilder.prototype.setHitType = function (hitType) {
+    this.hit.t = hitType;
+    return this;
+}
+
 // @return Map<String,String>
 HitBuilder.prototype.build = function () {
-    // 处理自定义维度和指标
+    var that = this;
     var i;
+    var del_keys = []; // 需要删除的无效字段
+
+    if (this.hit.ni == 0) {
+        del_keys.push('ni');
+    }
+
+    // 清理旧的cd<index> ,cm<index>
+    for (var k in this.hit) {
+        if (k.match(/^(cd|cm)\d+$/)) {
+            del_keys.push(k);
+        }
+    }
+
+    // 删除无效字段
+    del_keys.map(function (k) { delete that.hit[k] });
+
+    // 处理自定义维度和指标
     var cd_arr = this.custom_dimensions;
     var cm_arr = this.custom_metrics;
 
@@ -218,10 +329,17 @@ HitBuilder.prototype.build = function () {
     return this.hit;
 }
 
+// 用来删除一些无效的可选参数
+function hit_delete_if(hitbuilder, paramName, condValue) {
+    if (hitbuilder.hit[paramName] == condValue) {
+        delete hitbuilder.hit[paramName];
+    }
+}
+
 // ScreenView
 function ScreenViewBuilder() {
     HitBuilder.call(this);
-    this.hit.t = "screenview";
+    this.setHitType("screenview");
 }
 ScreenViewBuilder.prototype = Object.create(HitBuilder.prototype);
 ScreenViewBuilder.prototype.constructor = ScreenViewBuilder;
@@ -229,43 +347,34 @@ ScreenViewBuilder.prototype.constructor = ScreenViewBuilder;
 // Event
 function EventBuilder() {
     HitBuilder.call(this);
-    this.hit.t = "event";
-    this.hit.ec = ""; // category
-    this.hit.ea = ""; // action
-    this.hit.el = ""; // [label]
-    this.hit.ev = 0;  // [value]
-    this.hit.ni = 0; // [nonInteraction] default: 0
+    this.setHitType("event");
+    this.setAll({
+        ec: "", // category
+        ea: "", // action
+        el: "", // [label]
+        ev: 0   // [value]
+    });
 }
 EventBuilder.prototype = Object.create(HitBuilder.prototype);
 EventBuilder.prototype.constructor = EventBuilder;
 
 EventBuilder.prototype.setCategory = function (category) {
-    this.hit.ec = category;
-    return this;
+    return this.set("ec", category);
 }
 EventBuilder.prototype.setAction = function (action) {
-    this.hit.ea = action;
-    return this;
+    return this.set("ea", action);
 }
 EventBuilder.prototype.setLabel = function (label) {
-    this.hit.el = label;
-    return this;
+    return this.set("el", label);
 }
 // @param int
 EventBuilder.prototype.setValue = function (value) {
-    this.hit.ev = value;
-    return this;
-}
-// @papam bool
-EventBuilder.prototype.setNonInteraction = function (nonInteraction) {
-    this.hit.ni = nonInteraction ? 1 : 0;
-    return this;
+    return this.set("ev", value);
 }
 EventBuilder.prototype.build = function () {
     // 去除无效字段字段
-    if (this.hit.ev === 0) delete this.hit.ev;
-    if (this.hit.el === "") delete this.hit.el;
-    if (this.hit.ni === 0) delete this.hit.ni;
+    hit_delete_if(this, "ev", 0);
+    hit_delete_if(this, "el", "");
 
     return HitBuilder.prototype.build.apply(this, arguments);
 }
@@ -273,86 +382,81 @@ EventBuilder.prototype.build = function () {
 // @Deprecated
 function SocialBuilder() {
     HitBuilder.call(this);
-    this.hit.t = "social";
-    this.hit.sn = ""; // network
-    this.hit.sa = ""; // action
-    this.hit.st = ""; // [target]
+    this.setHitType("social");
+    this.setAll({
+        sn: "", // network
+        sa: "", // action
+        st: ""  // [target]
+    });
 }
 SocialBuilder.prototype = Object.create(HitBuilder.prototype);
 SocialBuilder.prototype.constructor = SocialBuilder;
 SocialBuilder.prototype.setNetwork = function (network) {
-    this.hit.sn = network;
-    return this;
+    return this.set("sn", network);
 }
 SocialBuilder.prototype.setAction = function (action) {
-    this.hit.sa = action;
-    return this;
+    return this.set("sa", action);
 }
 SocialBuilder.prototype.setTarget = function (target) {
-    this.hit.st = target;
-    return this;
+    return this.set("st", target);
 }
 SocialBuilder.prototype.build = function () {
-    if (this.hit.st === "") delete this.hit.st;
+    hit_delete_if(this, "st", "");
 
     return HitBuilder.prototype.build.apply(this, arguments);
 }
 // Exception
 function ExceptionBuilder() {
     HitBuilder.call(this);
-    this.hit.t = "exception";
-    this.hit.exd = ""; // description
-    this.hit.exf = 1; // is_fatal, default:1
+    this.setHitType("exception");
+    this.setAll({
+        exd: "", // description
+        exf: 1   // is_fatal, default:1
+    });
 }
 ExceptionBuilder.prototype = Object.create(HitBuilder.prototype);
 ExceptionBuilder.prototype.constructor = ExceptionBuilder;
 ExceptionBuilder.prototype.setDescription = function (description) {
-    this.hit.exd = description;
-    return this;
+    return this.set("exd", description);
 }
 // @param bool is_fatal
 ExceptionBuilder.prototype.setFatal = function (is_fatal) {
-    this.hit.exf = is_fatal ? 1 : 0;
-    return this;
+    return this.set("exf", is_fatal ? 1 : 0);
 }
 
 // Timing
 function TimingBuilder() {
     HitBuilder.call(this);
-    this.hit.t = "timing";
-    this.hit.utc = ""; // category
-    this.hit.utv = ""; // variable
-    this.hit.utt = 0;  // value
-    this.hit.utl = ""; // [label]
+    this.setHitType("timing");
+    this.setAll({
+        utc: "", // category
+        utv: "", // variable
+        utt: 0,  // value
+        utl: ""  // [label]
+    });
 }
 TimingBuilder.prototype = Object.create(HitBuilder.prototype);
 TimingBuilder.prototype.constructor = TimingBuilder;
 TimingBuilder.prototype.setCategory = function (category) {
-    this.hit.utc = category;
-    return this;
+    return this.set("utc", category);
 }
 TimingBuilder.prototype.setVariable = function (variable) {
-    this.hit.utv = variable;
-    return this;
+    return this.set("utv", variable);
 }
-// @param int 单位：毫秒
+// @param long 单位：毫秒
 TimingBuilder.prototype.setValue = function (value) {
-    this.hit.utt = value;
-    return this;
+    return this.set("utt", value);
 }
 TimingBuilder.prototype.setLabel = function (label) {
-    this.hit.utl = label;
-    return this;
+    return this.set("utl", label);
 }
 TimingBuilder.prototype.build = function () {
-    if (this.hit.utl === "") delete this.hit.utl;
+    hit_delete_if(this, "utl", "");
 
     return HitBuilder.prototype.build.apply(this, arguments);
 }
 
-// TODO: more HitBuilders here...
-
-
+// 一些工具函数
 function getUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0,
@@ -400,7 +504,7 @@ module.exports = {
         HitBuilder: HitBuilder,
         ScreenViewBuilder: ScreenViewBuilder,
         EventBuilder: EventBuilder,
-        //SocialBuilder: SocialBuilder,
+        SocialBuilder: SocialBuilder,
         ExceptionBuilder: ExceptionBuilder,
         TimingBuilder: TimingBuilder
     }
