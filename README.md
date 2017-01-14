@@ -241,13 +241,32 @@ User ID用来进行跨应用和跨设备的同一用户跟踪，比如你可以�
 
 ## 电子商务活动相关
 
-[衡量电子商务活动](ecommerce.md)
+[衡量电子商务活动](doc/ecommerce.md)
 
 
 ## API参考
 
-（待整理...）   
-接口设计跟Android的SDK提供的很类似，有经验的看代码应该马上能用。
+所有接口直接参考Google Analytics SDK for Android，可以直接查看对应API文档。
+
+[GoogleAnalytics](doc/GoogleAnalytics.md)
+
+跟踪器
+
+* [Tracker](https://developers.google.com/android/reference/com/google/android/gms/analytics/Tracker.html#enableAdvertisingIdCollection(boolean))
+
+匹配构建
+
+* [HitBuilder](https://developers.google.com/android/reference/com/google/android/gms/analytics/HitBuilders.HitBuilder)
+* [ScreenViewBuilder](https://developers.google.com/android/reference/com/google/android/gms/analytics/HitBuilders.ScreenViewBuilder)
+* [EventBuilder](https://developers.google.com/android/reference/com/google/android/gms/analytics/HitBuilders.EventBuilder)
+* [ExceptionBuilder](https://developers.google.com/android/reference/com/google/android/gms/analytics/HitBuilders.ExceptionBuilder)
+* [TimingBuilder](https://developers.google.com/android/reference/com/google/android/gms/analytics/HitBuilders.TimingBuilder)
+
+增强型电子商务API
+
+* [Product](https://developers.google.com/android/reference/com/google/android/gms/analytics/ecommerce/Product)
+* [ProductAction](https://developers.google.com/android/reference/com/google/android/gms/analytics/ecommerce/ProductAction)
+* [Promotion](https://developers.google.com/android/reference/com/google/android/gms/analytics/ecommerce/Promotion)
 
 ## 功能特点
 
