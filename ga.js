@@ -1,6 +1,6 @@
-// 
-// https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
-// TODO: 目前只支持screenview,event,timing,exception, 需要支持更多统计类型
+//
+// 参考协议：https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
+// 参考Android SDK接口：https://developers.google.com/analytics/devguides/collection/android/v4/
 //
 
 function GoogleAnalytics(app) {
@@ -25,8 +25,6 @@ function GoogleAnalytics(app) {
     this.sr = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function (x) { return Math.floor(x * pixelRatio) }).join('x');
     this.vp = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function (x) { return Math.floor(x) }).join('x');
 
-    this.sending = false; //数据发送状态
-    this.send_queue = []; //发送队列
 }
 GoogleAnalytics.prototype.setAppName = function (appName) {
     this.appName = appName;
@@ -37,9 +35,100 @@ GoogleAnalytics.prototype.setAppVersion = function (appVersion) {
     return this;
 }
 
+GoogleAnalytics.prototype.getDefaultTracker = function () {
+    return this.trackers[0];
+}
+GoogleAnalytics.prototype.newTracker = function (trackingID) {
+    var t = new Tracker(this, trackingID);
+    this.trackers.push(t);
+    return t;
+}
+
+// 支持Measurement Protocol“&”符号语法
+// 兼容兼容Android SDK中 .set('&uid','value') 的写法
+function hit_param_fix(paramName) {
+    return String(paramName).replace(/^&/, '');
+}
+
+function Tracker(ga, tid) {
+    this.ga = ga;
+    this.hit = {
+        tid: tid || "", // tracking Id
+        cd: "" // screenName
+    };
+    this.next_hit = {}; // 下一个hit需要设置的参数
+
+    this.sending = false; //数据发送状态
+    this.send_queue = []; //发送队列
+}
+Tracker.prototype.get = function (key) {
+    return this.hit[hit_param_fix(key)];
+}
+Tracker.prototype.set = function (key, value) {
+    this.hit[hit_param_fix(key)] = value;
+    return this;
+}
+// @param bool	
+Tracker.prototype.setAnonymizeIp = function (anonymize) {
+    return this.set("aip", anonymize ? 1 : 0);
+}
+Tracker.prototype.setAppId = function (appId) {
+    return this.set("aid", appId);
+}
+Tracker.prototype.setAppInstallerId = function (appInstallerId) {
+    return this.set("aiid", appInstallerId);
+}
+Tracker.prototype.setAppName = function (appName) {
+    return this.set("an", appName);
+}
+Tracker.prototype.setAppVersion = function (appVersion) {
+    return this.set("av", appVersion);
+}
+// Includes the campaign parameters contained in the URI referrer in the next hit.
+// @param String
+Tracker.prototype.setCampaignParamsOnNextHit = function (uri) {
+    var hit = parseUtmParams(uri);
+    for (var k in hit) {
+        this.next_hit[k] = hit[k];
+    }
+    return this;
+}
+// 一般是UUID
+Tracker.prototype.setClientId = function (clientId) {
+    return this.set("cid", clientId);
+}
+Tracker.prototype.setEncoding = function (encoding) {
+    return this.set("de", encoding);
+}
+Tracker.prototype.setLanguage = function (language) {
+    return this.set("ul", language);
+}
+// 两个字母的国家代号，比如CN,US... 或者地理位置ID
+// https://developers.google.com/analytics/devguides/collection/protocol/v1/geoid
+Tracker.prototype.setLocation = function (location) {
+    return this.set("geoid", location);
+}
+// e.g. 24-bit
+Tracker.prototype.setScreenColors = function (screenColors) {
+    return this.set("sd", screenColors);
+}
+Tracker.prototype.setScreenName = function (screenName) {
+    return this.set("cd", screenName);
+}
+Tracker.prototype.setScreenResolution = function (width, height) {
+    return this.set("sr", [width, height].join('x'));
+}
+Tracker.prototype.setViewportSize = function (viewportSize) {
+    return this.set("vp", viewportSize);
+}
+// @param Map<String,String> hit
+Tracker.prototype.send = function (hit) {
+    this.send_queue_push(this.ga, hit);
+    return this;
+}
 // 小程序最多只有5个并发网络请求，使用队列方式尽量不过多占用请求
-GoogleAnalytics.prototype.send = function (t, hit) {
-    var ga = this;
+Tracker.prototype.send_queue_push = function (ga, hit) {
+    var t = this;
 
     // 默认基础字段
     var data = {
@@ -59,10 +148,15 @@ GoogleAnalytics.prototype.send = function (t, hit) {
         ua: ga.userAgent
     };
 
-    // 合并tracker上的参数
+    // 合并Tracker上的参数
     for (var k in t.hit) {
         data[k] = t.hit[k];
     }
+    // Tracker上有预设的单次发送数据
+    for (var k in t.next_hit) {
+        data[k] = t.next_hit[k];
+    }
+    t.next_hit = {}; // clear
 
     // 合并Builder上的参数
     for (var k in hit) {
@@ -75,7 +169,7 @@ GoogleAnalytics.prototype.send = function (t, hit) {
 
     this._do_send();
 }
-GoogleAnalytics.prototype._do_send = function () {
+Tracker.prototype._do_send = function () {
     if (this.sending) {
         return;
     }
@@ -102,8 +196,6 @@ GoogleAnalytics.prototype._do_send = function () {
         var data = sd[0];
         data.qt = (new Date()).getTime() - sd[1].getTime(); // 数据发生和发送的时间差，单位毫秒
         data.z = Math.floor(Math.random() * 2147483648);
-
-
 
         var payload = payloadEncoder(data);
         var old_len = payloads.map(function (a) { return a.length; }).reduce(function (a, b) { return a + b; }, 0);
@@ -159,85 +251,6 @@ GoogleAnalytics.prototype._do_send = function () {
     });
 }
 
-GoogleAnalytics.prototype.getDefaultTracker = function () {
-    return this.trackers[0];
-}
-GoogleAnalytics.prototype.newTracker = function (trackingID) {
-    var t = new Tracker(this, trackingID);
-    this.trackers.push(t);
-    return t;
-}
-
-// 支持Measurement Protocol“&”符号语法
-// 兼容兼容Android SDK中 .set('&uid','value') 的写法
-function hit_param_fix(paramName) {
-    return String(paramName).replace(/^&/, '');
-}
-
-function Tracker(ga, tid) {
-    this.ga = ga;
-    this.hit = {
-        tid: tid || "", // tracking Id
-        cd: "" // screenName
-    };
-}
-Tracker.prototype.get = function (key) {
-    return this.hit[hit_param_fix(key)];
-}
-Tracker.prototype.set = function (key, value) {
-    this.hit[hit_param_fix(key)] = value;
-    return this;
-}
-// @param bool	
-Tracker.prototype.setAnonymizeIp = function (anonymize) {
-    return this.set("aip", anonymize ? 1 : 0);
-}
-Tracker.prototype.setAppId = function (appId) {
-    return this.set("aid", appId);
-}
-Tracker.prototype.setAppInstallerId = function (appInstallerId) {
-    return this.set("aiid", appInstallerId);
-}
-Tracker.prototype.setAppName = function (appName) {
-    return this.set("an", appName);
-}
-Tracker.prototype.setAppVersion = function (appVersion) {
-    return this.set("av", appVersion);
-}
-// 一般是UUID
-Tracker.prototype.setClientId = function (clientId) {
-    return this.set("cid", clientId);
-}
-Tracker.prototype.setEncoding = function (encoding) {
-    return this.set("de", encoding);
-}
-Tracker.prototype.setLanguage = function (language) {
-    return this.set("ul", language);
-}
-// 两个字母的国家代号，比如CN,US... 或者地理位置ID
-// https://developers.google.com/analytics/devguides/collection/protocol/v1/geoid
-Tracker.prototype.setLocation = function (location) {
-    return this.set("geoid", location);
-}
-// e.g. 24-bit
-Tracker.prototype.setScreenColors = function (screenColors) {
-    return this.set("sd", screenColors);
-}
-Tracker.prototype.setScreenName = function (screenName) {
-    return this.set("cd", screenName);
-}
-Tracker.prototype.setScreenResolution = function (width, height) {
-    return this.set("sr", [width, height].join('x'));
-}
-Tracker.prototype.setViewportSize = function (viewportSize) {
-    return this.set("vp", viewportSize);
-}
-// @param Map<String,String> hit
-Tracker.prototype.send = function (hit) {
-    this.ga.send(this, hit);
-    return this;
-}
-
 
 // HitBuilder [基础类]
 function HitBuilder() {
@@ -247,6 +260,11 @@ function HitBuilder() {
     };
     this.custom_dimensions = [];
     this.custom_metrics = [];
+
+    this.next_impression_index = 1;  // max 200
+    this.impression_product_list = {}; // Map<impressionName,[impression_index,next_product_index]>
+    this.next_product_index = 1;   // max 200
+    this.next_promotion_index = 1; // max 200
 }
 
 HitBuilder.prototype.get = function (paramName) {
@@ -263,6 +281,71 @@ HitBuilder.prototype.setAll = function (params) {
     }
     return this;
 }
+
+// @param Product product
+// @param String impressionList
+HitBuilder.prototype.addImpression = function (product, impressionList) {
+    if (!this.impression_product_list[impressionList]) {
+        this.impression_product_list[impressionList] = [this.next_impression_index, 1];
+        // 新的展示列表名字 il<impIndex>nm
+        this.set("il" + this.next_impression_index + "nm", impressionList);
+        this.next_impression_index++;
+    }
+    var impIndex = this.impression_product_list[impressionList][0];
+    var prdIndex = this.impression_product_list[impressionList][1];
+
+    for (var k in product.hit) {
+        // il<impIndex>pi<prdIndex>XX
+        this.set("il" + impIndex + "pi" + prdIndex + k, product.hit[k]);
+    }
+
+    // incr prdIndex
+    this.impression_product_list[impressionList][1] = prdIndex + 1;
+
+    return this;
+}
+// @param Product
+HitBuilder.prototype.addProduct = function (product) {
+    var prdIndex = this.next_product_index;
+
+    for (var k in product.hit) {
+        // pr<prdIndex>XX
+        this.set("pr" + prdIndex + k, product.hit[k]);
+    }
+
+    this.next_product_index++;
+    return this;
+}
+// @param Promotion
+HitBuilder.prototype.addPromotion = function (promotion) {
+    var promIndex = this.next_promotion_index;
+
+    for (var k in promotion.hit) {
+        // promo<promIndex>XX
+        this.set("promo" + promIndex + k, promotion.hit[k]);
+    }
+
+    this.next_promotion_index++;
+    return this;
+}
+// @param ProductAction
+HitBuilder.prototype.setProductAction = function (action) {
+    for (var k in action.hit) {
+        this.set(k, action.hit[k]);
+    }
+    return this;
+}
+// @param String default: view
+HitBuilder.prototype.setPromotionAction = function (action) {
+    return this.set("promoa", action);
+}
+// Parses and translates utm campaign parameters to analytics campaign parameters and returns them as a map.
+// @param String url
+HitBuilder.prototype.setCampaignParamsFromUrl = function (utmParams) {
+    var hit = parseUtmParams(utmParams);
+    return this.setAll(hit);
+}
+
 // @param int index >= 1
 // @param String dimension
 HitBuilder.prototype.setCustomDimension = function (index, dimension) {
@@ -456,6 +539,165 @@ TimingBuilder.prototype.build = function () {
     return HitBuilder.prototype.build.apply(this, arguments);
 }
 
+// ecommerce 增强型电子商务相关相关
+// Product
+function Product() {
+    this.hit = {};
+}
+Product.prototype.setBrand = function (brand) {
+    this.hit["br"] = brand;
+    return this;
+}
+Product.prototype.setCategory = function (category) {
+    this.hit["ca"] = category;
+    return this;
+}
+Product.prototype.setCouponCode = function (couponCode) {
+    this.hit["cc"] = couponCode;
+    return this;
+}
+// @param int index
+// @param String value
+Product.prototype.setCustomDimension = function (index, value) {
+    this.hit["cd" + index] = value;
+    return this;
+}
+// @param int index
+// @param double value
+Product.prototype.setCustomMetric = function (index, value) {
+    this.hit["cm" + index] = value;
+    return this;
+}
+// Product SKU
+// @param String id
+Product.prototype.setId = function (id) {
+    this.hit["id"] = id;
+    return this;
+}
+// @param String name
+Product.prototype.setName = function (name) {
+    this.hit["nm"] = name;
+    return this;
+}
+// 产品在列表中的位置 1-200
+// @param int position
+Product.prototype.setPosition = function (position) {
+    this.hit["ps"] = position;
+    return this;
+}
+// @param double price
+Product.prototype.setPrice = function (price) {
+    this.hit["pr"] = price;
+    return this;
+}
+// @param int 
+Product.prototype.setQuantity = function (quantity) {
+    this.hit["qt"] = quantity;
+    return this;
+}
+// 产品款式款式
+// @param String
+Product.prototype.setVariant = function (variant) {
+    this.hit["va"] = variant;
+    return this;
+}
+
+// 活动促销类 Promotion
+function Promotion() {
+    this.hit = {};
+}
+Promotion.ACTION_CLICK = "click";
+Promotion.ACTION_VIEW = "view";
+// @param String
+Promotion.prototype.setCreative = function (creative) {
+    this.hit["cr"] = creative;
+    return this;
+}
+// @param String
+Promotion.prototype.setId = function (id) {
+    this.hit["id"] = id;
+    return this;
+}
+// @param String
+Promotion.prototype.setName = function (name) {
+    this.hit["nm"] = name;
+    return this;
+}
+// @param String
+Promotion.prototype.setPosition = function (positionName) {
+    this.hit["ps"] = positionName;
+    return this;
+}
+
+// 产品操作 ProductAction
+function ProductAction(action) {
+    this.hit = {
+        pa: action // action : ACTION_XXXX
+    };
+}
+ProductAction.ACTION_ADD = "add";
+ProductAction.ACTION_CHECKOUT = "checkout";
+ProductAction.ACTION_CHECKOUT_OPTION = "checkout_option";
+// @Deprecated use ACTION_CHECKOUT_OPTION
+// ProductAction.ACTION_CHECKOUT_OPTIONS = "checkout_options";
+ProductAction.ACTION_CLICK = "click";
+ProductAction.ACTION_DETAIL = "detail";
+ProductAction.ACTION_PURCHASE = "purchase";
+ProductAction.ACTION_REFUND = "refund";
+ProductAction.ACTION_REMOVE = "remove";
+
+// @param String
+ProductAction.prototype.setCheckoutOptions = function (options) {
+    this.hit["col"] = options;
+    return this;
+}
+// @param int
+ProductAction.prototype.setCheckoutStep = function (step) {
+    this.hit["cos"] = step;
+    return this;
+}
+// @param String
+ProductAction.prototype.setProductActionList = function (productActionList) {
+    this.hit["pal"] = productActionList;
+    return this;
+}
+// @param String
+ProductAction.prototype.setProductListSource = function (productListSource) {
+    // NOTE: 查不到协议字段名,但是Android SDK中查到是pls
+    this.hit["pls"] = productListSource;
+    return this;
+}
+// @param String 交易关联公司
+ProductAction.prototype.setTransactionAffiliation = function (transactionAffiliation) {
+    this.hit["ta"] = transactionAffiliation;
+    return this;
+}
+// @param String 在交易中使用的优惠券
+ProductAction.prototype.setTransactionCouponCode = function (transactionCouponCode) {
+    this.hit["tcc"] = transactionCouponCode;
+    return this;
+}
+// @param String
+ProductAction.prototype.setTransactionId = function (transactionId) {
+    this.hit["ti"] = transactionId;
+    return this;
+}
+// @param double  交易收入，指总收入：此值应包含所有运费或税费。
+ProductAction.prototype.setTransactionRevenue = function (revenue) {
+    this.hit["tr"] = revenue;
+    return this;
+}
+// @param double 交易运费
+ProductAction.prototype.setTransactionShipping = function (shipping) {
+    this.hit["ts"] = shipping;
+    return this;
+}
+// @param double 交易税费
+ProductAction.prototype.setTransactionTax = function (tax) {
+    this.hit["tt"] = tax;
+    return this;
+}
+
 // 一些工具函数
 function getUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -480,6 +722,29 @@ function buildUserAgentFromSystemInfo(si) {
         var v = si.system.replace(/^.*?([0-9.]+).*?$/, function (x, y) { return y; }).replace(/\./g, '_');
         return "Mozilla/5.0 (iPad; CPU OS " + v + " like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Mobile/10A406 MicroMessenger/" + si.version;
     }
+}
+
+// Parses and translates utm campaign parameters to analytics campaign parameters and returns them as a map.
+// @param String  Example: http://examplepetstore.com/index.html?utm_source=email&utm_medium=email_marketing&utm_campaign=summer&utm_content=email_variation_1
+function parseUtmParams(url) {
+    var queryString = url.replace(/^[^?]+\?/, '');
+    var hit = {};
+    var map = {
+        "utm_source": "cs",
+        "utm_medium": "cm",
+        "utm_term": "ck",
+        "utm_content": "cc",
+        "utm_campaign": "cn",
+        "gclid": "gclid"
+    };
+    queryString.split('&').map(function (a) {
+        var kv = a.split('=');
+        var k = decodeURIComponent(kv[0]);
+        if (kv.length != 2 || kv[1] === "" || !map[k]) return;
+        var v = decodeURIComponent(kv[1]);
+        hit[map[k]] = v;
+    });
+    return hit;
 }
 
 function getInstance(app) {
@@ -507,5 +772,9 @@ module.exports = {
         SocialBuilder: SocialBuilder,
         ExceptionBuilder: ExceptionBuilder,
         TimingBuilder: TimingBuilder
-    }
+    },
+    // ecommerce 电子商务类
+    Product: Product,
+    ProductAction: ProductAction,
+    Promotion: Promotion
 }
