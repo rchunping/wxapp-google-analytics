@@ -14,7 +14,8 @@
 > 增强型电子商务数据只能随现有的匹配（例如 screenview 或 event）一起发送。如果您设置了电子商务值但没有发送任何匹配，或在设置电子商务值之前就发送了匹配，则系统将不会发送电子商务数据。   
 > 
 > 并且在Google Analytics后台，在对应的媒体资源中启用 **增强型电子商务功能** 。
-   
+
+.   
 
 > **提醒** 以下示例需要用到 `HitBuilders`, `Product`, `ProductAction`, `Promotion`
 > ```js

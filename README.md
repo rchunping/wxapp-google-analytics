@@ -243,7 +243,44 @@ User ID用来进行跨应用和跨设备的同一用户跟踪，比如你可以�
 
 ## 电子商务活动相关
 
-[衡量电子商务活动](doc/ecommerce.md)
+请查看[衡量电子商务活动](doc/ecommerce.md)
+
+## 广告系列和流量来源归因
+
+你可以使用 `setCampaignParamsFromUrl` 方法在跟踪器中直接设置广告系列参数，以便将一系列会话中的用户活动归因到特定的引荐流量来源或营销广告系列：
+
+```js
+// Set screen name.
+t.setScreenName(screenName);
+
+// In this example, campaign information is set using
+// a url string with Google Analytics campaign parameters.
+// Note: 这只是示例，网址 ? 前面部分其实没有用处，主要是utm_XXXXX系列参数的解析
+//
+var campaignData = "http://example.com/index.html?" +
+    "utm_source=email&utm_medium=email_marketing&utm_campaign=summer" +
+    "&utm_content=email_variation_1";
+
+// Campaign data sent with this hit.
+t.send(new HitBuilders.ScreenViewBuilder()
+    .setCampaignParamsFromUrl(campaignData)
+    .build()
+);
+```
+
+> **重要提醒：** 如果你想跟踪广告带来的新用户，那么一定要保证 `setCampaignParamsFromUrl` 应用在该新用户发送的第一个匹配上。
+
+你也可在跟踪器上设置
+
+```js
+t.setScreenName(screenName);
+var campaignData = "http://example.com/index.html?" +
+    "utm_source=email&utm_medium=email_marketing&utm_campaign=summer" +
+    "&utm_content=email_variation_1";
+t.setCampaignParamsOnNextHit(campaignData); // 下一个发送的匹配会带上这些参数
+
+t.send(new HitBuilders.ScreenViewBuilder().build());
+```
 
 
 ## API参考
