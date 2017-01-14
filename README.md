@@ -296,5 +296,7 @@ User ID用来进行跨应用和跨设备的同一用户跟踪，比如你可以�
 ## 效果截图
 
 ![实时在线](screenshot.png)
+
 ![电子商务概况](screenshot2.png)
+
 ![购物行为](screenshot3.png)

@@ -8,7 +8,7 @@
 
 
 | 参数 | 类型 | 默认 | 说明 |
-| -- | -- | -- | -- |
+| --- | --- | --- | --- |
 | `app` | Object | empty Object | 建议使用App对象 |
 
 > **返回** `GoogleAnalytics` 实例
@@ -20,7 +20,7 @@
 设置小程序名称
 
 | 参数 | 类型 | 默认 | 说明 |
-| -- | -- | -- | -- |
+| --- | --- | --- | --- |
 | `appName` | String | "Mini Program" | 小程序名称 |
 
 > **返回** `GoogleAnalytics`
@@ -30,7 +30,7 @@
 设置小程序版本
 
 | 参数 | 类型 | 默认 | 说明 |
-| -- | -- | -- | -- |
+| --- | --- | --- | --- |
 | `appVersion` | String | "unknow" | 小程序版本号 |
 
 > **返回** `GoogleAnalytics`
@@ -40,7 +40,7 @@
 创建一个`Tracker`实例
 
 | 参数 | 类型 | 默认 | 说明 |
-| -- | -- | -- | -- |
+| --- | --- | --- | --- |
 | `trackingID` | String | 无 | Google Analytics的媒体资源跟踪ID，一般是`UA-XXXX-X`的形式。 |
 
 > **返回** `Tracker`实例

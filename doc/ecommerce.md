@@ -137,7 +137,7 @@ t.send(builder.build());
 下表列出商品所有操作：
 
 | 参数值 | 说明 |
-| -- | -- |
+| --- | --- |
 | `ProductAction.ACTION_ADD` | 把商品加入购物车 |
 | `ProductAction.ACTION_CHECKOUT` | 描述结算流程，可以分几步进行 |
 | `ProductAction.ACTION_CHECKOUT_OPTION` | 结算选项，比如选择支付方式，选择快递方式等 |
