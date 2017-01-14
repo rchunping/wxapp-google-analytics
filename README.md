@@ -282,6 +282,7 @@ t.setCampaignParamsOnNextHit(campaignData); // 下一个发送的匹配会带上
 t.send(new HitBuilders.ScreenViewBuilder().build());
 ```
 
+查看全部[广告系列参数](https://developers.google.com/analytics/devguides/collection/android/v4/campaigns#campaign-params)。
 
 ## API参考
 
