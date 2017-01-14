@@ -270,7 +270,7 @@ t.send(new HitBuilders.ScreenViewBuilder()
 
 > **重要提醒：** 如果你想跟踪广告带来的新用户，那么一定要保证 `setCampaignParamsFromUrl` 应用在该新用户发送的第一个匹配上。
 
-你也可在跟踪器上设置
+你也可在跟踪器上通过 `setCampaignParamsOnNextHit` 设置：
 
 ```js
 t.setScreenName(screenName);
