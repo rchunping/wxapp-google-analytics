@@ -1,6 +1,8 @@
 
 # 谷歌统计 (Google Analytics) SDK for 微信小程
 
+完整实现了 [Measurement Protocol](https://developers.google.com/analytics/devguides/collection/protocol/v1/reference)，并且API接口和 [Google Analytics for Android](https://developers.google.com/analytics/devguides/collection/android/v4/) 保持高度一致。
+
 ## 快速入门
 
 #### 1. Google Analytics 设置
