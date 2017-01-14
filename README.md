@@ -291,3 +291,10 @@ User ID用来进行跨应用和跨设备的同一用户跟踪，比如你可以�
 协议 [Measurement Protocol](https://developers.google.com/analytics/devguides/collection/protocol/v1/reference)  
 接口参照 [Google Analytics for Android](https://developers.google.com/analytics/devguides/collection/android/v4/)   
 [广告系列参数](https://developers.google.com/analytics/devguides/collection/android/v4/campaigns#campaign-params)
+
+
+## 效果截图
+
+![实时在线](screenshot.png)
+![电子商务概况](screenshot2.png)
+![购物行为](screenshot3.png)
