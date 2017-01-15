@@ -249,7 +249,7 @@ User ID用来进行跨应用和跨设备的同一用户跟踪，比如你可以�
 
 ## 广告系列和流量来源归因
 
-你可以使用 `setCampaignParamsFromUrl` 方法在跟踪器中直接设置广告系列参数，以便将一系列会话中的用户活动归因到特定的引荐流量来源或营销广告系列：
+你可以使用 `setCampaignParamsFromUrl` 方法在匹配构建器 `HitBuilder` 中直接设置广告系列参数，以便将一系列会话中的用户活动归因到特定的引荐流量来源或营销广告系列：
 
 ```js
 // Set screen name.
