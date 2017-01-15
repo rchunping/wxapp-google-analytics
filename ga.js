@@ -27,8 +27,12 @@ function GoogleAnalytics(app) {
     this.cid = cid;
     this.userAgent = buildUserAgentFromSystemInfo(this.systemInfo);
     var pixelRatio = this.systemInfo.pixelRatio;
-    this.sr = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function (x) { return Math.floor(x * pixelRatio) }).join('x');
-    this.vp = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function (x) { return Math.floor(x) }).join('x');
+    this.sr = param_screen_fix(
+        Math.round(this.systemInfo.windowWidth * pixelRatio), 
+        Math.round(this.systemInfo.windowHeight * pixelRatio),
+        this.systemInfo
+    );
+    this.vp = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function (x) { return x;/*Math.floor(x)*/ }).join('x');
 
 }
 GoogleAnalytics.prototype.setAppName = function (appName) {
@@ -750,6 +754,13 @@ function parseUtmParams(url) {
         hit[map[k]] = v;
     });
     return hit;
+}
+
+function param_screen_fix(w,h,si){
+    var isAndroid = si.system.toLowerCase().indexOf('android') > -1;
+    var isIPad = !isAndroid && si.model.toLowerCase().indexOf('iphone') == -1;
+    // TODO: 修正常见机型的分辨率
+    return [w,h].join('x');
 }
 
 function getInstance(app) {
