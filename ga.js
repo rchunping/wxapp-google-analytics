@@ -1,4 +1,9 @@
-//
+// 
+// 谷歌统计 (Google Analytics) SDK 微信小程序专用
+// Google Analytics SDK for Wechat's Mini Program
+// 
+// 项目地址： https://github.com/rchunping/wxapp-google-analytics
+// 
 // 参考协议：https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
 // 参考Android SDK接口：https://developers.google.com/analytics/devguides/collection/android/v4/
 //
