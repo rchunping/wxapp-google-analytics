@@ -11,7 +11,7 @@
 
 > **注意：** 
 > 
-> 增强型电子商务数据只能随现有的匹配（例如 screenview 或 event）一起发送。如果您设置了电子商务值但没有发送任何匹配，或在设置电子商务值之前就发送了匹配，则系统将不会发送电子商务数据。   
+> 增强型电子商务数据只能随现有的匹配（例如 `screenview` 或 `event`）一起发送。如果您设置了电子商务值但没有发送任何匹配，或在设置电子商务值之前就发送了匹配，则系统将不会发送电子商务数据。   
 > 
 > 并且在Google Analytics后台，在对应的媒体资源中启用 **增强型电子商务功能** 。
 
@@ -30,7 +30,7 @@
 
 ### 衡量展示
 
-要衡量产品展示，请构建 Product 对象，并使用 addImpression 方法随匹配发送此对象。Product 必须有 name 或 id 值。其他所有值都非必需，可以不用设置。
+要衡量产品展示，请构建 `Product` 对象，并使用 `addImpression` 方法随匹配发送此对象。`Product` 必须有 `name` 或 `id` 值。其他所有值都非必需，可以不用设置。
 
 ```js
 // 在一个 "Search Results" 的列表中展示了商品 P12345
@@ -58,7 +58,7 @@ t.send(builder.build());
 
 ### 衡量操作
 
-操作的衡量方法如下：使用 `addProduct` 方法和 `Product` 对象来添加产品详情，并使用 `setProductAction` 方法和 ProductAction 对象来指定用户执行的操作。
+操作的衡量方法如下：使用 `addProduct` 方法和 `Product` 对象来添加产品详情，并使用 `setProductAction` 方法和 `ProductAction` 对象来指定用户执行的操作。
 
 例如，以下代码衡量对搜索结果列表中展示的某个产品的选择：
 
@@ -275,7 +275,7 @@ t.send(builder.build());
 
 #### 衡量某个结帐步骤
 
-要衡量某个结帐步骤，请使用 `addProduct` 方法和 `Product` 对象来添加产品详情，并使用 `setProductAction` 方法和 ProductAction 对象来指示结帐操作。如果适用，还可以设置该结帐步骤的 `step` 和 `option`。
+要衡量某个结帐步骤，请使用 `addProduct` 方法和 `Product` 对象来添加产品详情，并使用 `setProductAction` 方法和 `ProductAction` 对象来指示结帐操作。如果适用，还可以设置该结帐步骤的 `step` 和 `option`。
 
 下例显示了如何衡量结帐流程的第一步（一个产品，拥有关于付款方式的额外信息）：
 
@@ -358,7 +358,7 @@ t.send(builder.build());
 
 #### 促销信息点击
 
-内部促销信息点击的衡量方法如下：使用 `addPromotion` 方法和 `Promotion` 对象以及 `setPromotionAction` 方法和 ProductAction 对象来指示促销信息点击操作。例如：
+内部促销信息点击的衡量方法如下：使用 `addPromotion` 方法和 `Promotion` 对象以及 `setPromotionAction` 方法和 `ProductAction` 对象来指示促销信息点击操作。例如：
 
 ```js
 var promotion = new Promotion()

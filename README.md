@@ -39,7 +39,7 @@ App({
 })
 ```
 
-#### 5. 找个Page来尝试一下简单的ScreenView统计
+#### 5. 找个`Page`来尝试一下简单的ScreenView统计
 
 ```js
 var ga = require('path/to/ga.js');
@@ -107,7 +107,7 @@ App({
 })
 ```
 
-跟踪器的使用（一般在Page逻辑中）
+跟踪器的使用（一般在`Page`逻辑中）
 
 ```js
 // /pages/index/index.js
