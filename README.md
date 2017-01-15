@@ -319,6 +319,7 @@ t.send(new HitBuilders.ScreenViewBuilder().build());
 
 1. 因为微信小程序能获取的系统信息很有限，将无法获取 `年龄`，`性别`，`兴趣` 这些用户特征信息。
 2. 展示广告功能无效
+3. 屏幕分辨率有误差。通过微信小程序`wx.getSystemInfo`获取`windowWidth`,`windowHeight`,`pixelRatio`计算得到。
 
 > **其他可能的问题**
 >
