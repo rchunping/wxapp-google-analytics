@@ -259,13 +259,13 @@ t.setScreenName(screenName);
 // a url string with Google Analytics campaign parameters.
 // Note: 这只是示例，网址 ? 前面部分其实没有用处，主要是utm_XXXXX系列参数的解析
 //
-var campaignData = "http://example.com/index.html?" +
+var campaignUrl = "http://example.com/index.html?" +
     "utm_source=email&utm_medium=email_marketing&utm_campaign=summer" +
     "&utm_content=email_variation_1";
 
 // Campaign data sent with this hit.
 t.send(new HitBuilders.ScreenViewBuilder()
-    .setCampaignParamsFromUrl(campaignData)
+    .setCampaignParamsFromUrl(campaignUrl)
     .build()
 );
 ```
@@ -276,13 +276,83 @@ t.send(new HitBuilders.ScreenViewBuilder()
 
 ```js
 t.setScreenName(screenName);
-var campaignData = "http://example.com/index.html?" +
+var campaignUrl = "http://example.com/index.html?" +
     "utm_source=email&utm_medium=email_marketing&utm_campaign=summer" +
     "&utm_content=email_variation_1";
-t.setCampaignParamsOnNextHit(campaignData); // 下一个发送的匹配会带上这些参数
+t.setCampaignParamsOnNextHit(campaignUrl); // 下一个发送的匹配会带上这些参数
 
 t.send(new HitBuilders.ScreenViewBuilder().build());
 ```
+
+### 跟踪微信小程序的二维码参数
+
+每个微信小程序可以设置多达10万个自定义参数的二维码，下面介绍如何跟踪每个二维码的推广效果。
+
+> 微信小程序自定义参数的二维码需要通过API来生成，参考[微信文档](https://mp.weixin.qq.com/debug/wxadoc/dev/api/qrcode.html)。
+
+假设你生成二维码时用的 `path` 是 
+```js
+{"path": "pages/index/index?utm_source=Coffee%20Bar&utm_medium=qrcode", "width": 430}
+
+// path 一般是你小程序的入口面，也可以是 App 上注册过的 pages 中的一个
+```
+
+在对应 `Page` 的 `onLoad` 里面用 `CampaignParams.parseFromOpageOptions` 识别二维码中的广告参数：
+
+```js
+// pages/index/index.js
+var ga = require('path/to/ga.js');
+var CampaignParams = ga.CampaignParams;
+
+Page({
+    //...
+    onLoad: function(options) {
+        var t = getApp().getTracker();
+        // 解析options中的 utm_xxxxxx 参数，生成一个广告连接 URL
+        var campaignUrl = CampaignParams.parseFromOpageOptions(options).toUrl();
+        t.setCampaignParamsOnNextHit(campaignUrl);
+
+        // 下一个发送的匹配就会带上广告来源信息
+        // t.send(Hit) 
+    },
+    //...
+})
+```
+
+如果 `path` 的参数不是 `utm_` 开头的广告系列参数，那么调用 `parseFromOpageOptions` 的时候需要第二个参数指定一个参数映射关系：
+
+```js
+{"path" : "pages/index/index?var1=Coffee%20Bar&var2=Scan%20Qrcode", "width": 430}
+
+
+// 扫码进入小程序后 
+Page({
+    onLoad: funciton(options) {
+        // 此时 options 是这样的 
+        // { "var1" : "Coffee Bar", "var2" : "Scan Qrcode" }
+        // 需要指定和 utm_xxx 的映射关系
+        var map = {
+            "var1" : "utm_source", // 把 var1 对应到  utm_source
+            "var2" : "utm_medium"
+        };
+
+        var campaignUrl = CampaignParams.parseFromOpageOptions(options, map).toUrl();
+        var t = getApp().getTracker();
+        t.setCampaignParamsOnNextHit(campaignUrl);
+    }
+})
+
+```
+
+广告系列参数列表
+
+| 参数 |	说明 |	示例 |
+| --- | --- | --- |
+| `utm_source` |	广告系列来源，用于确定具体的搜索引擎、简报或其他来源	| utm_source=google |
+| `utm_medium`	| 广告系列媒介，用于确定电子邮件或采用每次点击费用 (CPC) 的广告等媒介	| utm_medium=cpc |
+| `utm_term` |	广告系列字词，用于付费搜索，为广告提供关键字	| utm_term=running+shoes |
+| `utm_content` |	广告系列内容，用于 A/B 测试和内容定位广告，以区分指向相同网址的不同广告或链接	| utm_content=logolink<br/>utm_content=textlink |
+| `utm_campaign` |	广告系列名称，用于关键字分析，以标识具体的产品推广活动或战略广告系列	| utm_campaign=spring_sale |
 
 查看全部[广告系列参数](https://developers.google.com/analytics/devguides/collection/android/v4/campaigns#campaign-params)。
 
@@ -312,6 +382,7 @@ t.send(new HitBuilders.ScreenViewBuilder().build());
 
 ## 功能特点
 
+* 完整实现 [Measurement Protocol](https://developers.google.com/analytics/devguides/collection/protocol/v1/reference)
 * 支持多个匹配数据批量上报
 * 因为微信小程序只支持5个`wx.request`并发，为了不影响业务数据的网络请求，数据上报的时候按顺序进行，最多占用一个`wx.request`
 
@@ -327,7 +398,7 @@ t.send(new HitBuilders.ScreenViewBuilder().build());
 > 在翻墙的时候碰到了这个问题，不翻墙时正常。
 >
 >
-> 其他问题可以通过控制台找 "ga.****" 的那些信息查看。
+> 你可以通过控制台找 "ga.****" 的那些信息查看。
 
 ## 参考资料
 
