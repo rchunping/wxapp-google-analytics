@@ -297,7 +297,7 @@ t.send(new HitBuilders.ScreenViewBuilder().build());
 // path 一般是你小程序的入口面，也可以是 App 上注册过的 pages 中的一个
 ```
 
-在对应 `Page` 的 `onLoad` 里面用 `CampaignParams.parseFromOpageOptions` 识别二维码中的广告参数：
+在对应 `Page` 的 `onLoad` 里面用 `CampaignParams.parseFromPageOptions` 识别二维码中的广告参数：
 
 ```js
 // pages/index/index.js
@@ -309,7 +309,7 @@ Page({
     onLoad: function(options) {
         var t = getApp().getTracker();
         // 解析options中的 utm_xxxxxx 参数，生成一个广告连接 URL
-        var campaignUrl = CampaignParams.parseFromOpageOptions(options).toUrl();
+        var campaignUrl = CampaignParams.parseFromPageOptions(options).toUrl();
         t.setCampaignParamsOnNextHit(campaignUrl);
 
         // 下一个发送的匹配就会带上广告来源信息
@@ -319,7 +319,7 @@ Page({
 })
 ```
 
-如果 `path` 的参数不是 `utm_` 开头的广告系列参数，那么调用 `parseFromOpageOptions` 的时候需要第二个参数指定一个参数映射关系：
+如果 `path` 的参数不是 `utm_` 开头的广告系列参数，那么调用 `parseFromPageOptions` 的时候需要第二个参数指定一个参数映射关系：
 
 ```js
 {"path" : "pages/index/index?var1=Coffee%20Bar&var2=Scan%20Qrcode", "width": 430}
@@ -336,7 +336,7 @@ Page({
             "var2" : "utm_medium"
         };
 
-        var campaignUrl = CampaignParams.parseFromOpageOptions(options, map).toUrl();
+        var campaignUrl = CampaignParams.parseFromPageOptions(options, map).toUrl();
         var t = getApp().getTracker();
         t.setCampaignParamsOnNextHit(campaignUrl);
     }
