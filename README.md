@@ -272,7 +272,7 @@ t.send(new HitBuilders.ScreenViewBuilder()
 
 > **重要提醒：** 如果你想跟踪广告带来的新用户，那么一定要保证 `setCampaignParamsFromUrl` 应用在该新用户发送的第一个匹配上。
 
-你也可在跟踪器上通过 `setCampaignParamsOnNextHit` 设置：
+你也可以在跟踪器上通过 `setCampaignParamsOnNextHit` 设置：
 
 ```js
 t.setScreenName(screenName);
@@ -319,7 +319,7 @@ Page({
 })
 ```
 
-如果 `path` 的参数不是 `utm_` 开头的广告系列参数，那么调用 `parseFromPageOptions` 的时候需要第二个参数指定一个参数映射关系：
+如果 `path` 的参数不是 `utm_` 开头的广告系列参数，那么调用 `parseFromPageOptions` 的时候需要传入第二个参数来指定参数名称的映射关系：
 
 ```js
 {"path" : "pages/index/index?var1=Coffee%20Bar&var2=Scan%20Qrcode", "width": 430}
@@ -398,7 +398,7 @@ Page({
 > 在翻墙的时候碰到了这个问题，不翻墙时正常。
 >
 >
-> 你可以通过控制台找 "ga.****" 的那些信息查看。
+> 你可以通过控制台查找 "ga.****" 的那些信息查看。
 
 ## 参考资料
 
