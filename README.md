@@ -294,7 +294,7 @@ t.send(new HitBuilders.ScreenViewBuilder().build());
 ```js
 {"path": "pages/index/index?utm_source=Coffee%20Bar&utm_medium=qrcode", "width": 430}
 
-// path 一般是你小程序的入口面，也可以是 App 上注册过的 pages 中的一个
+// path 一般是你小程序的入口页，也可以是 App 上注册过的 pages 中的一个
 ```
 
 在对应 `Page` 的 `onLoad` 里面用 `CampaignParams.parseFromPageOptions` 识别二维码中的广告参数：
