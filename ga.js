@@ -28,7 +28,7 @@ function GoogleAnalytics(app) {
     this.userAgent = buildUserAgentFromSystemInfo(this.systemInfo);
     var pixelRatio = this.systemInfo.pixelRatio;
     this.sr = param_screen_fix(
-        Math.round(this.systemInfo.windowWidth * pixelRatio), 
+        Math.round(this.systemInfo.windowWidth * pixelRatio),
         Math.round(this.systemInfo.windowHeight * pixelRatio),
         this.systemInfo
     );
@@ -102,6 +102,7 @@ Tracker.prototype.setCampaignParamsOnNextHit = function (uri) {
     }
     return this;
 }
+
 // 一般是UUID
 Tracker.prototype.setClientId = function (clientId) {
     return this.set("cid", clientId);
@@ -350,8 +351,8 @@ HitBuilder.prototype.setPromotionAction = function (action) {
 }
 // Parses and translates utm campaign parameters to analytics campaign parameters and returns them as a map.
 // @param String url
-HitBuilder.prototype.setCampaignParamsFromUrl = function (utmParams) {
-    var hit = parseUtmParams(utmParams);
+HitBuilder.prototype.setCampaignParamsFromUrl = function (url) {
+    var hit = parseUtmParams(url);
     return this.setAll(hit);
 }
 
@@ -707,6 +708,75 @@ ProductAction.prototype.setTransactionTax = function (tax) {
     return this;
 }
 
+// 微信小程序相关的辅助类类
+function CampaignParams() {
+    this.params = {};
+    this.params_map = {
+        "utm_source": "cs",
+        "utm_medium": "cm",
+        "utm_term": "ck",
+        "utm_content": "cc",
+        "utm_campaign": "cn",
+        "gclid": "gclid"
+    };
+}
+CampaignParams.prototype.set = function (paramName, paramValue) {
+    if (paramName in this.params_map) {
+        this.params[paramName] = paramValue;
+    }
+    return this;
+}
+// 转换成广告推广连接,形式： https://example.com?utm_XXXX=xxxx&utm_YYYY=yyyy
+CampaignParams.prototype.toUrl = function () {
+    var kv = [];
+    for (var k in this.params) {
+        kv.push([encodeURIComponent(k), encodeURIComponent(this.params[k])].join('='));
+    }
+
+    return 'https://example.com?' + kv.join('&');
+}
+// 从微信小程序Page.onLoad(options) 中解析path中的参数
+// @param Map<String,String> options
+// @param Map<String,String> map 参数映射关系，把其他名字的参数映射到utm_xxxx的形式
+CampaignParams.parseFromPageOptions = function (options, map) {
+    options = options || {};
+    map = map || {};
+
+    var cp = new CampaignParams();
+
+    var kv = [];
+
+    for (var k in options) {
+        var v = options[k];
+        if (k in map) {
+            k = map[k];
+        }
+        if (k.match(/^utm_/) || k == "gclid") {
+            cp.set(k, v);
+        }
+    }
+    //console.log(cp);
+
+    return cp;
+}
+CampaignParams.parseFromUrl = function (url) {
+    var queryString = url.replace(/^[^?]+\?/, '');
+    var hit = {};
+    var cp = new CampaignParams();
+    var map = cp.params_map;
+
+    queryString.split('&').map(function (a) {
+        var kv = a.split('=');
+        var k = decodeURIComponent(kv[0]);
+        if (kv.length != 2 || kv[1] === "" || !map[k]) return;
+        var v = decodeURIComponent(kv[1]);
+        cp.set(k, v);
+    });
+
+    return cp;
+}
+
+
 // 一些工具函数
 function getUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -736,31 +806,20 @@ function buildUserAgentFromSystemInfo(si) {
 // Parses and translates utm campaign parameters to analytics campaign parameters and returns them as a map.
 // @param String  Example: http://examplepetstore.com/index.html?utm_source=email&utm_medium=email_marketing&utm_campaign=summer&utm_content=email_variation_1
 function parseUtmParams(url) {
-    var queryString = url.replace(/^[^?]+\?/, '');
+    var cp = CampaignParams.parseFromUrl(url);
+    var map = cp.params_map;
     var hit = {};
-    var map = {
-        "utm_source": "cs",
-        "utm_medium": "cm",
-        "utm_term": "ck",
-        "utm_content": "cc",
-        "utm_campaign": "cn",
-        "gclid": "gclid"
-    };
-    queryString.split('&').map(function (a) {
-        var kv = a.split('=');
-        var k = decodeURIComponent(kv[0]);
-        if (kv.length != 2 || kv[1] === "" || !map[k]) return;
-        var v = decodeURIComponent(kv[1]);
-        hit[map[k]] = v;
-    });
+    for (var k in cp.params) {
+        hit[map[k]] = cp.params[k];
+    }
     return hit;
 }
 
-function param_screen_fix(w,h,si){
+function param_screen_fix(w, h, si) {
     var isAndroid = si.system.toLowerCase().indexOf('android') > -1;
     var isIPad = !isAndroid && si.model.toLowerCase().indexOf('iphone') == -1;
     // TODO: 修正常见机型的分辨率
-    return [w,h].join('x');
+    return [w, h].join('x');
 }
 
 function getInstance(app) {
@@ -792,5 +851,7 @@ module.exports = {
     // ecommerce 电子商务类
     Product: Product,
     ProductAction: ProductAction,
-    Promotion: Promotion
+    Promotion: Promotion,
+    // 广告系列参数辅助类
+    CampaignParams: CampaignParams
 }
