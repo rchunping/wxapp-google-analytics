@@ -13,7 +13,7 @@
 > 
 > 增强型电子商务数据只能随现有的匹配（例如 `screenview` 或 `event`）一起发送。如果您设置了电子商务值但没有发送任何匹配，或在设置电子商务值之前就发送了匹配，则系统将不会发送电子商务数据。   
 > 
-> 并且在Google Analytics后台，在对应的媒体资源中启用 **增强型电子商务功能** 。
+> 并且需要在Google Analytics后台，在对应的媒体资源中启用 **增强型电子商务功能** 。
 
 .   
 
@@ -358,7 +358,7 @@ t.send(builder.build());
 
 #### 促销信息点击
 
-内部促销信息点击的衡量方法如下：使用 `addPromotion` 方法和 `Promotion` 对象以及 `setPromotionAction` 方法和 `ProductAction` 对象来指示促销信息点击操作。例如：
+内部促销信息点击的衡量方法如下：使用 `addPromotion` 方法和 `Promotion` 对象以及 `setPromotionAction` 方法来指示促销信息点击操作。例如：
 
 ```js
 var promotion = new Promotion()
