@@ -377,3 +377,10 @@ HitBuilders.EventBuilder builder = new HitBuilders.EventBuilder()
 var t = getApp().getTracker();
 t.send(builder.build());
 ```
+
+促销信息的操作只有2个：
+
+| 参数值 | 说明 |
+| --- | --- |
+| `Promotion.ACTION_VIEW` | 这是默认操作，只需要在 `HitBuilder` 上调用 `addPromotion` 即可 |
+| `Promotion.ACTION_CLICK` | 促销信息点击操作，需要在 `HitBuilder` 上用 `setPromotionAction` 设置  |
