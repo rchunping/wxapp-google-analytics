@@ -398,7 +398,7 @@ Page({
 > 在翻墙的时候碰到了这个问题，不翻墙时正常。请在开发工具中勾选`开发环境不校验请求域名以及 TLS 版本`。
 >
 > 在iPhone上会出现 `"ga:failed"`,内容为`errMsg: "request:fail response data convert to utf8 fail"`   
-> 这是微信小程序接口bug，始终把返回内容当成json数据了，实际上数据已经成功发送给谷歌，返回的内容是一个1x1的gif图片。不会影响数据收集（见[issue 1](issues/1)）。
+> 这是微信小程序接口bug，始终把返回内容当成json数据了，实际上数据已经成功发送给谷歌，返回的内容是一个1x1的gif图片。不会影响数据收集（见[issue 1](https://github.com/rchunping/wxapp-google-analytics/issues/1)）。
 >
 > 你可以通过控制台查找 "ga.****" 的那些信息查看。
 
