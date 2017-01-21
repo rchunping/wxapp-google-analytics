@@ -15,7 +15,9 @@ Google Analytics SDK for Wechat's Mini Program
 
 #### 3. 在微信小程序后台设置request合法域名
 
-把 `www.google-analytics.com` 添加到request合法域名中。对，就是每个月只能设置3次那个。
+把 `www.google-analytics.com` 添加到request合法域名中。
+
+> **提醒：** 合法域名每个月只能设置3次。如果只是本地开发测试，可以先不用设置，只要把开发工具里面`开发环境不校验请求域名以及 TLS 版本`勾选一下，等递交审核前再去设置合法域名。
 
 #### 4. 框架 `app.js` 中修改
 
@@ -162,13 +164,13 @@ Page({
 
 ```js
 t.send(new HitBuilders.ScreenViewBuilder()
-    .setCustomDimension(1,"纬度1")
-    .setCustomDimension(2,"纬度2")
+    .setCustomDimension(1,"维度1")
+    .setCustomDimension(2,"维度2")
     .setCustomMetric(1,100.35)
     .setCustomMetric(2,200));
 ```
 
-> **提醒：** 自定义纬度和指标在所有 `HitBuilder` 上都能设置。
+> **提醒：** 自定义维度和指标在所有 `HitBuilder` 上都能设置。
 
 ### 事件 Event
 
