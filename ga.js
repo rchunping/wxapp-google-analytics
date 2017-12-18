@@ -15,6 +15,8 @@ function GoogleAnalytics(app) {
     this.appName = "Mini Program";
     this.appVersion = "unknow";
 
+    this.trackerServer = "https://www.google-analytics.com";
+
     //console.log(this.systemInfo);
 
     var cidKey = '_ga_cid'; // 存用户身份(UUID)
@@ -32,22 +34,27 @@ function GoogleAnalytics(app) {
         Math.round(this.systemInfo.windowHeight * pixelRatio),
         this.systemInfo
     );
-    this.vp = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function (x) { return x;/*Math.floor(x)*/ }).join('x');
+    this.vp = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function(x) { return x; /*Math.floor(x)*/ }).join('x');
 
 }
-GoogleAnalytics.prototype.setAppName = function (appName) {
+// 设置自定义的跟踪服务器地址，默认是 https://www.google-analytics.com
+GoogleAnalytics.prototype.setTrackerServer = function(server) {
+    this.trackerServer = server;
+    return this;
+}
+GoogleAnalytics.prototype.setAppName = function(appName) {
     this.appName = appName;
     return this;
 }
-GoogleAnalytics.prototype.setAppVersion = function (appVersion) {
+GoogleAnalytics.prototype.setAppVersion = function(appVersion) {
     this.appVersion = appVersion;
     return this;
 }
 
-GoogleAnalytics.prototype.getDefaultTracker = function () {
+GoogleAnalytics.prototype.getDefaultTracker = function() {
     return this.trackers[0];
 }
-GoogleAnalytics.prototype.newTracker = function (trackingID) {
+GoogleAnalytics.prototype.newTracker = function(trackingID) {
     var t = new Tracker(this, trackingID);
     this.trackers.push(t);
     return t;
@@ -70,32 +77,32 @@ function Tracker(ga, tid) {
     this.sending = false; //数据发送状态
     this.send_queue = []; //发送队列
 }
-Tracker.prototype.get = function (key) {
+Tracker.prototype.get = function(key) {
     return this.hit[hit_param_fix(key)];
 }
-Tracker.prototype.set = function (key, value) {
-    this.hit[hit_param_fix(key)] = value;
-    return this;
-}
-// @param bool	
-Tracker.prototype.setAnonymizeIp = function (anonymize) {
+Tracker.prototype.set = function(key, value) {
+        this.hit[hit_param_fix(key)] = value;
+        return this;
+    }
+    // @param bool	
+Tracker.prototype.setAnonymizeIp = function(anonymize) {
     return this.set("aip", anonymize ? 1 : 0);
 }
-Tracker.prototype.setAppId = function (appId) {
+Tracker.prototype.setAppId = function(appId) {
     return this.set("aid", appId);
 }
-Tracker.prototype.setAppInstallerId = function (appInstallerId) {
+Tracker.prototype.setAppInstallerId = function(appInstallerId) {
     return this.set("aiid", appInstallerId);
 }
-Tracker.prototype.setAppName = function (appName) {
+Tracker.prototype.setAppName = function(appName) {
     return this.set("an", appName);
 }
-Tracker.prototype.setAppVersion = function (appVersion) {
-    return this.set("av", appVersion);
-}
-// Includes the campaign parameters contained in the URI referrer in the next hit.
-// @param String
-Tracker.prototype.setCampaignParamsOnNextHit = function (uri) {
+Tracker.prototype.setAppVersion = function(appVersion) {
+        return this.set("av", appVersion);
+    }
+    // Includes the campaign parameters contained in the URI referrer in the next hit.
+    // @param String
+Tracker.prototype.setCampaignParamsOnNextHit = function(uri) {
     var hit = parseUtmParams(uri);
     for (var k in hit) {
         this.next_hit[k] = hit[k];
@@ -104,40 +111,40 @@ Tracker.prototype.setCampaignParamsOnNextHit = function (uri) {
 }
 
 // 一般是UUID
-Tracker.prototype.setClientId = function (clientId) {
+Tracker.prototype.setClientId = function(clientId) {
     return this.set("cid", clientId);
 }
-Tracker.prototype.setEncoding = function (encoding) {
+Tracker.prototype.setEncoding = function(encoding) {
     return this.set("de", encoding);
 }
-Tracker.prototype.setLanguage = function (language) {
-    return this.set("ul", language);
-}
-// 两个字母的国家代号，比如CN,US... 或者地理位置ID
-// https://developers.google.com/analytics/devguides/collection/protocol/v1/geoid
-Tracker.prototype.setLocation = function (location) {
-    return this.set("geoid", location);
-}
-// e.g. 24-bit
-Tracker.prototype.setScreenColors = function (screenColors) {
+Tracker.prototype.setLanguage = function(language) {
+        return this.set("ul", language);
+    }
+    // 两个字母的国家代号，比如CN,US... 或者地理位置ID
+    // https://developers.google.com/analytics/devguides/collection/protocol/v1/geoid
+Tracker.prototype.setLocation = function(location) {
+        return this.set("geoid", location);
+    }
+    // e.g. 24-bit
+Tracker.prototype.setScreenColors = function(screenColors) {
     return this.set("sd", screenColors);
 }
-Tracker.prototype.setScreenName = function (screenName) {
+Tracker.prototype.setScreenName = function(screenName) {
     return this.set("cd", screenName);
 }
-Tracker.prototype.setScreenResolution = function (width, height) {
+Tracker.prototype.setScreenResolution = function(width, height) {
     return this.set("sr", [width, height].join('x'));
 }
-Tracker.prototype.setViewportSize = function (viewportSize) {
-    return this.set("vp", viewportSize);
-}
-// @param Map<String,String> hit
-Tracker.prototype.send = function (hit) {
-    this.send_queue_push(this.ga, hit);
-    return this;
-}
-// 小程序最多只有5个并发网络请求，使用队列方式尽量不过多占用请求
-Tracker.prototype.send_queue_push = function (ga, hit) {
+Tracker.prototype.setViewportSize = function(viewportSize) {
+        return this.set("vp", viewportSize);
+    }
+    // @param Map<String,String> hit
+Tracker.prototype.send = function(hit) {
+        this.send_queue_push(this.ga, hit);
+        return this;
+    }
+    // 小程序最多只有5个并发网络请求，使用队列方式尽量不过多占用请求
+Tracker.prototype.send_queue_push = function(ga, hit) {
     var t = this;
 
     // 默认基础字段
@@ -179,7 +186,7 @@ Tracker.prototype.send_queue_push = function (ga, hit) {
 
     this._do_send();
 }
-Tracker.prototype._do_send = function () {
+Tracker.prototype._do_send = function() {
     if (this.sending) {
         return;
     }
@@ -192,7 +199,7 @@ Tracker.prototype._do_send = function () {
     this.sending = true;
     var that = this;
 
-    var payloadEncoder = function (data) {
+    var payloadEncoder = function(data) {
         var s = [];
         for (var k in data) {
             s.push([encodeURIComponent(k), encodeURIComponent(data[k])].join("="));
@@ -208,7 +215,7 @@ Tracker.prototype._do_send = function () {
         data.z = Math.floor(Math.random() * 2147483648);
 
         var payload = payloadEncoder(data);
-        var old_len = payloads.map(function (a) { return a.length; }).reduce(function (a, b) { return a + b; }, 0);
+        var old_len = payloads.map(function(a) { return a.length; }).reduce(function(a, b) { return a + b; }, 0);
         var add_len = payload.length;
 
         // 批量上报有限制
@@ -230,11 +237,11 @@ Tracker.prototype._do_send = function () {
 
     var payloadData = payloads.join("\r\n");
 
-    var apiUrl = 'https://www.google-analytics.com/collect';
+    var apiUrl = this.ga.trackerServer + '/collect';
     if (payloads.length > 1) {
         console.log(["ga.queue.send.batch", payloadData]);
         //使用批量上报接口
-        apiUrl = 'https://www.google-analytics.com/batch';
+        apiUrl = this.ga.trackerServer + '/batch';
     } else {
         console.log(["ga.queue.send.collect", payloadData]);
     }
@@ -245,18 +252,18 @@ Tracker.prototype._do_send = function () {
         header: {
             "content-type": "text/plain" //"application/x-www-form-urlencoded"
         },
-        success: function (res) {
+        success: function(res) {
             // success
             console.log(["ga:success", res]);
         },
-        fail: function (res) {
+        fail: function(res) {
             // fail
             console.log(["ga:failed", res])
         },
-        complete: function () {
+        complete: function() {
             // complete
             that.sending = false;
-            setTimeout(function () { that._do_send(); }, 0);
+            setTimeout(function() { that._do_send(); }, 0);
         }
     });
 }
@@ -266,26 +273,26 @@ Tracker.prototype._do_send = function () {
 function HitBuilder() {
     this.hit = {
         t: "screenview", // default HitType
-        ni: 0            // [nonInteraction] default: 0
+        ni: 0 // [nonInteraction] default: 0
     };
     this.custom_dimensions = [];
     this.custom_metrics = [];
 
-    this.next_impression_index = 1;  // max 200
+    this.next_impression_index = 1; // max 200
     this.impression_product_list = {}; // Map<impressionName,[impression_index,next_product_index]>
-    this.next_product_index = 1;   // max 200
+    this.next_product_index = 1; // max 200
     this.next_promotion_index = 1; // max 200
 }
 
-HitBuilder.prototype.get = function (paramName) {
+HitBuilder.prototype.get = function(paramName) {
     return this.hit[hit_param_fix(paramName)];
 }
-HitBuilder.prototype.set = function (paramName, paramValue) {
-    this.hit[hit_param_fix(paramName)] = paramValue;
-    return this;
-}
-// @param Map<String,String> params
-HitBuilder.prototype.setAll = function (params) {
+HitBuilder.prototype.set = function(paramName, paramValue) {
+        this.hit[hit_param_fix(paramName)] = paramValue;
+        return this;
+    }
+    // @param Map<String,String> params
+HitBuilder.prototype.setAll = function(params) {
     for (var k in params) {
         this.set(k, params[k]);
     }
@@ -294,99 +301,99 @@ HitBuilder.prototype.setAll = function (params) {
 
 // @param Product product
 // @param String impressionList
-HitBuilder.prototype.addImpression = function (product, impressionList) {
-    if (!this.impression_product_list[impressionList]) {
-        this.impression_product_list[impressionList] = [this.next_impression_index, 1];
-        // 新的展示列表名字 il<impIndex>nm
-        this.set("il" + this.next_impression_index + "nm", impressionList);
-        this.next_impression_index++;
+HitBuilder.prototype.addImpression = function(product, impressionList) {
+        if (!this.impression_product_list[impressionList]) {
+            this.impression_product_list[impressionList] = [this.next_impression_index, 1];
+            // 新的展示列表名字 il<impIndex>nm
+            this.set("il" + this.next_impression_index + "nm", impressionList);
+            this.next_impression_index++;
+        }
+        var impIndex = this.impression_product_list[impressionList][0];
+        var prdIndex = this.impression_product_list[impressionList][1];
+
+        for (var k in product.hit) {
+            // il<impIndex>pi<prdIndex>XX
+            this.set("il" + impIndex + "pi" + prdIndex + k, product.hit[k]);
+        }
+
+        // incr prdIndex
+        this.impression_product_list[impressionList][1] = prdIndex + 1;
+
+        return this;
     }
-    var impIndex = this.impression_product_list[impressionList][0];
-    var prdIndex = this.impression_product_list[impressionList][1];
+    // @param Product
+HitBuilder.prototype.addProduct = function(product) {
+        var prdIndex = this.next_product_index;
 
-    for (var k in product.hit) {
-        // il<impIndex>pi<prdIndex>XX
-        this.set("il" + impIndex + "pi" + prdIndex + k, product.hit[k]);
+        for (var k in product.hit) {
+            // pr<prdIndex>XX
+            this.set("pr" + prdIndex + k, product.hit[k]);
+        }
+
+        this.next_product_index++;
+        return this;
     }
+    // @param Promotion
+HitBuilder.prototype.addPromotion = function(promotion) {
+        var promIndex = this.next_promotion_index;
 
-    // incr prdIndex
-    this.impression_product_list[impressionList][1] = prdIndex + 1;
+        for (var k in promotion.hit) {
+            // promo<promIndex>XX
+            this.set("promo" + promIndex + k, promotion.hit[k]);
+        }
 
-    return this;
-}
-// @param Product
-HitBuilder.prototype.addProduct = function (product) {
-    var prdIndex = this.next_product_index;
-
-    for (var k in product.hit) {
-        // pr<prdIndex>XX
-        this.set("pr" + prdIndex + k, product.hit[k]);
+        this.next_promotion_index++;
+        return this;
     }
-
-    this.next_product_index++;
-    return this;
-}
-// @param Promotion
-HitBuilder.prototype.addPromotion = function (promotion) {
-    var promIndex = this.next_promotion_index;
-
-    for (var k in promotion.hit) {
-        // promo<promIndex>XX
-        this.set("promo" + promIndex + k, promotion.hit[k]);
+    // @param ProductAction
+HitBuilder.prototype.setProductAction = function(action) {
+        for (var k in action.hit) {
+            this.set(k, action.hit[k]);
+        }
+        return this;
     }
-
-    this.next_promotion_index++;
-    return this;
-}
-// @param ProductAction
-HitBuilder.prototype.setProductAction = function (action) {
-    for (var k in action.hit) {
-        this.set(k, action.hit[k]);
+    // @param String default: view
+HitBuilder.prototype.setPromotionAction = function(action) {
+        return this.set("promoa", action);
     }
-    return this;
-}
-// @param String default: view
-HitBuilder.prototype.setPromotionAction = function (action) {
-    return this.set("promoa", action);
-}
-// Parses and translates utm campaign parameters to analytics campaign parameters and returns them as a map.
-// @param String url
-HitBuilder.prototype.setCampaignParamsFromUrl = function (url) {
+    // Parses and translates utm campaign parameters to analytics campaign parameters and returns them as a map.
+    // @param String url
+HitBuilder.prototype.setCampaignParamsFromUrl = function(url) {
     var hit = parseUtmParams(url);
     return this.setAll(hit);
 }
 
 // @param int index >= 1
 // @param String dimension
-HitBuilder.prototype.setCustomDimension = function (index, dimension) {
-    this.custom_dimensions.push([index, dimension]);
-    return this;
-}
-// @param int index >= 1
-// @param float metric
-HitBuilder.prototype.setCustomMetric = function (index, metric) {
-    this.custom_metrics.push([index, metric]);
-    return this;
-}
-// 新开session
-HitBuilder.prototype.setNewSession = function () {
-    this.hit.sc = "start";
-    return this;
-}
-// 非互动匹配
-// @papam bool
-HitBuilder.prototype.setNonInteraction = function (nonInteraction) {
-    this.hit.ni = nonInteraction ? 1 : 0;
-    return this;
-}
-// @param String hitType
-HitBuilder.prototype.setHitType = function (hitType) {
+HitBuilder.prototype.setCustomDimension = function(index, dimension) {
+        this.custom_dimensions.push([index, dimension]);
+        return this;
+    }
+    // @param int index >= 1
+    // @param float metric
+HitBuilder.prototype.setCustomMetric = function(index, metric) {
+        this.custom_metrics.push([index, metric]);
+        return this;
+    }
+    // 新开session
+HitBuilder.prototype.setNewSession = function() {
+        this.hit.sc = "start";
+        return this;
+    }
+    // 非互动匹配
+    // @papam bool
+HitBuilder.prototype.setNonInteraction = function(nonInteraction) {
+        this.hit.ni = nonInteraction ? 1 : 0;
+        return this;
+    }
+    // @param String hitType
+HitBuilder.prototype.setHitType = function(hitType) {
     this.hit.t = hitType;
     return this;
 }
 
 // @return Map<String,String>
-HitBuilder.prototype.build = function () {
+HitBuilder.prototype.build = function() {
     var that = this;
     var i;
     var del_keys = []; // 需要删除的无效字段
@@ -403,7 +410,7 @@ HitBuilder.prototype.build = function () {
     }
 
     // 删除无效字段
-    del_keys.map(function (k) { delete that.hit[k] });
+    del_keys.map(function(k) { delete that.hit[k] });
 
     // 处理自定义维度和指标
     var cd_arr = this.custom_dimensions;
@@ -445,75 +452,75 @@ function EventBuilder() {
         ec: "", // category
         ea: "", // action
         el: "", // [label]
-        ev: 0   // [value]
+        ev: 0 // [value]
     });
 }
 EventBuilder.prototype = Object.create(HitBuilder.prototype);
 EventBuilder.prototype.constructor = EventBuilder;
 
-EventBuilder.prototype.setCategory = function (category) {
+EventBuilder.prototype.setCategory = function(category) {
     return this.set("ec", category);
 }
-EventBuilder.prototype.setAction = function (action) {
+EventBuilder.prototype.setAction = function(action) {
     return this.set("ea", action);
 }
-EventBuilder.prototype.setLabel = function (label) {
-    return this.set("el", label);
-}
-// @param int
-EventBuilder.prototype.setValue = function (value) {
+EventBuilder.prototype.setLabel = function(label) {
+        return this.set("el", label);
+    }
+    // @param int
+EventBuilder.prototype.setValue = function(value) {
     return this.set("ev", value);
 }
-EventBuilder.prototype.build = function () {
-    // 去除无效字段字段
-    hit_delete_if(this, "ev", 0);
-    hit_delete_if(this, "el", "");
+EventBuilder.prototype.build = function() {
+        // 去除无效字段字段
+        hit_delete_if(this, "ev", 0);
+        hit_delete_if(this, "el", "");
 
-    return HitBuilder.prototype.build.apply(this, arguments);
-}
-// Social 
-// @Deprecated
+        return HitBuilder.prototype.build.apply(this, arguments);
+    }
+    // Social 
+    // @Deprecated
 function SocialBuilder() {
     HitBuilder.call(this);
     this.setHitType("social");
     this.setAll({
         sn: "", // network
         sa: "", // action
-        st: ""  // [target]
+        st: "" // [target]
     });
 }
 SocialBuilder.prototype = Object.create(HitBuilder.prototype);
 SocialBuilder.prototype.constructor = SocialBuilder;
-SocialBuilder.prototype.setNetwork = function (network) {
+SocialBuilder.prototype.setNetwork = function(network) {
     return this.set("sn", network);
 }
-SocialBuilder.prototype.setAction = function (action) {
+SocialBuilder.prototype.setAction = function(action) {
     return this.set("sa", action);
 }
-SocialBuilder.prototype.setTarget = function (target) {
+SocialBuilder.prototype.setTarget = function(target) {
     return this.set("st", target);
 }
-SocialBuilder.prototype.build = function () {
-    hit_delete_if(this, "st", "");
+SocialBuilder.prototype.build = function() {
+        hit_delete_if(this, "st", "");
 
-    return HitBuilder.prototype.build.apply(this, arguments);
-}
-// Exception
+        return HitBuilder.prototype.build.apply(this, arguments);
+    }
+    // Exception
 function ExceptionBuilder() {
     HitBuilder.call(this);
     this.setHitType("exception");
     this.setAll({
         exd: "", // description
-        exf: 1   // is_fatal, default:1
+        exf: 1 // is_fatal, default:1
     });
 }
 ExceptionBuilder.prototype = Object.create(HitBuilder.prototype);
 ExceptionBuilder.prototype.constructor = ExceptionBuilder;
-ExceptionBuilder.prototype.setDescription = function (description) {
-    return this.set("exd", description);
-}
-// @param bool is_fatal
-ExceptionBuilder.prototype.setFatal = function (is_fatal) {
+ExceptionBuilder.prototype.setDescription = function(description) {
+        return this.set("exd", description);
+    }
+    // @param bool is_fatal
+ExceptionBuilder.prototype.setFatal = function(is_fatal) {
     return this.set("exf", is_fatal ? 1 : 0);
 }
 
@@ -524,26 +531,26 @@ function TimingBuilder() {
     this.setAll({
         utc: "", // category
         utv: "", // variable
-        utt: 0,  // value
-        utl: ""  // [label]
+        utt: 0, // value
+        utl: "" // [label]
     });
 }
 TimingBuilder.prototype = Object.create(HitBuilder.prototype);
 TimingBuilder.prototype.constructor = TimingBuilder;
-TimingBuilder.prototype.setCategory = function (category) {
+TimingBuilder.prototype.setCategory = function(category) {
     return this.set("utc", category);
 }
-TimingBuilder.prototype.setVariable = function (variable) {
-    return this.set("utv", variable);
-}
-// @param long 单位：毫秒
-TimingBuilder.prototype.setValue = function (value) {
+TimingBuilder.prototype.setVariable = function(variable) {
+        return this.set("utv", variable);
+    }
+    // @param long 单位：毫秒
+TimingBuilder.prototype.setValue = function(value) {
     return this.set("utt", value);
 }
-TimingBuilder.prototype.setLabel = function (label) {
+TimingBuilder.prototype.setLabel = function(label) {
     return this.set("utl", label);
 }
-TimingBuilder.prototype.build = function () {
+TimingBuilder.prototype.build = function() {
     hit_delete_if(this, "utl", "");
 
     return HitBuilder.prototype.build.apply(this, arguments);
@@ -554,60 +561,60 @@ TimingBuilder.prototype.build = function () {
 function Product() {
     this.hit = {};
 }
-Product.prototype.setBrand = function (brand) {
+Product.prototype.setBrand = function(brand) {
     this.hit["br"] = brand;
     return this;
 }
-Product.prototype.setCategory = function (category) {
+Product.prototype.setCategory = function(category) {
     this.hit["ca"] = category;
     return this;
 }
-Product.prototype.setCouponCode = function (couponCode) {
-    this.hit["cc"] = couponCode;
-    return this;
-}
-// @param int index
-// @param String value
-Product.prototype.setCustomDimension = function (index, value) {
-    this.hit["cd" + index] = value;
-    return this;
-}
-// @param int index
-// @param double value
-Product.prototype.setCustomMetric = function (index, value) {
-    this.hit["cm" + index] = value;
-    return this;
-}
-// Product SKU
-// @param String id
-Product.prototype.setId = function (id) {
-    this.hit["id"] = id;
-    return this;
-}
-// @param String name
-Product.prototype.setName = function (name) {
-    this.hit["nm"] = name;
-    return this;
-}
-// 产品在列表中的位置 1-200
-// @param int position
-Product.prototype.setPosition = function (position) {
-    this.hit["ps"] = position;
-    return this;
-}
-// @param double price
-Product.prototype.setPrice = function (price) {
-    this.hit["pr"] = price;
-    return this;
-}
-// @param int 
-Product.prototype.setQuantity = function (quantity) {
-    this.hit["qt"] = quantity;
-    return this;
-}
-// 产品款式款式
-// @param String
-Product.prototype.setVariant = function (variant) {
+Product.prototype.setCouponCode = function(couponCode) {
+        this.hit["cc"] = couponCode;
+        return this;
+    }
+    // @param int index
+    // @param String value
+Product.prototype.setCustomDimension = function(index, value) {
+        this.hit["cd" + index] = value;
+        return this;
+    }
+    // @param int index
+    // @param double value
+Product.prototype.setCustomMetric = function(index, value) {
+        this.hit["cm" + index] = value;
+        return this;
+    }
+    // Product SKU
+    // @param String id
+Product.prototype.setId = function(id) {
+        this.hit["id"] = id;
+        return this;
+    }
+    // @param String name
+Product.prototype.setName = function(name) {
+        this.hit["nm"] = name;
+        return this;
+    }
+    // 产品在列表中的位置 1-200
+    // @param int position
+Product.prototype.setPosition = function(position) {
+        this.hit["ps"] = position;
+        return this;
+    }
+    // @param double price
+Product.prototype.setPrice = function(price) {
+        this.hit["pr"] = price;
+        return this;
+    }
+    // @param int 
+Product.prototype.setQuantity = function(quantity) {
+        this.hit["qt"] = quantity;
+        return this;
+    }
+    // 产品款式款式
+    // @param String
+Product.prototype.setVariant = function(variant) {
     this.hit["va"] = variant;
     return this;
 }
@@ -619,22 +626,22 @@ function Promotion() {
 Promotion.ACTION_CLICK = "click";
 Promotion.ACTION_VIEW = "view";
 // @param String
-Promotion.prototype.setCreative = function (creative) {
-    this.hit["cr"] = creative;
-    return this;
-}
-// @param String
-Promotion.prototype.setId = function (id) {
-    this.hit["id"] = id;
-    return this;
-}
-// @param String
-Promotion.prototype.setName = function (name) {
-    this.hit["nm"] = name;
-    return this;
-}
-// @param String
-Promotion.prototype.setPosition = function (positionName) {
+Promotion.prototype.setCreative = function(creative) {
+        this.hit["cr"] = creative;
+        return this;
+    }
+    // @param String
+Promotion.prototype.setId = function(id) {
+        this.hit["id"] = id;
+        return this;
+    }
+    // @param String
+Promotion.prototype.setName = function(name) {
+        this.hit["nm"] = name;
+        return this;
+    }
+    // @param String
+Promotion.prototype.setPosition = function(positionName) {
     this.hit["ps"] = positionName;
     return this;
 }
@@ -657,53 +664,53 @@ ProductAction.ACTION_REFUND = "refund";
 ProductAction.ACTION_REMOVE = "remove";
 
 // @param String
-ProductAction.prototype.setCheckoutOptions = function (options) {
-    this.hit["col"] = options;
-    return this;
-}
-// @param int
-ProductAction.prototype.setCheckoutStep = function (step) {
-    this.hit["cos"] = step;
-    return this;
-}
-// @param String
-ProductAction.prototype.setProductActionList = function (productActionList) {
-    this.hit["pal"] = productActionList;
-    return this;
-}
-// @param String
-ProductAction.prototype.setProductListSource = function (productListSource) {
-    // NOTE: 查不到协议字段名,但是Android SDK中查到是pls
-    this.hit["pls"] = productListSource;
-    return this;
-}
-// @param String 交易关联公司
-ProductAction.prototype.setTransactionAffiliation = function (transactionAffiliation) {
-    this.hit["ta"] = transactionAffiliation;
-    return this;
-}
-// @param String 在交易中使用的优惠券
-ProductAction.prototype.setTransactionCouponCode = function (transactionCouponCode) {
-    this.hit["tcc"] = transactionCouponCode;
-    return this;
-}
-// @param String
-ProductAction.prototype.setTransactionId = function (transactionId) {
-    this.hit["ti"] = transactionId;
-    return this;
-}
-// @param double  交易收入，指总收入：此值应包含所有运费或税费。
-ProductAction.prototype.setTransactionRevenue = function (revenue) {
-    this.hit["tr"] = revenue;
-    return this;
-}
-// @param double 交易运费
-ProductAction.prototype.setTransactionShipping = function (shipping) {
-    this.hit["ts"] = shipping;
-    return this;
-}
-// @param double 交易税费
-ProductAction.prototype.setTransactionTax = function (tax) {
+ProductAction.prototype.setCheckoutOptions = function(options) {
+        this.hit["col"] = options;
+        return this;
+    }
+    // @param int
+ProductAction.prototype.setCheckoutStep = function(step) {
+        this.hit["cos"] = step;
+        return this;
+    }
+    // @param String
+ProductAction.prototype.setProductActionList = function(productActionList) {
+        this.hit["pal"] = productActionList;
+        return this;
+    }
+    // @param String
+ProductAction.prototype.setProductListSource = function(productListSource) {
+        // NOTE: 查不到协议字段名,但是Android SDK中查到是pls
+        this.hit["pls"] = productListSource;
+        return this;
+    }
+    // @param String 交易关联公司
+ProductAction.prototype.setTransactionAffiliation = function(transactionAffiliation) {
+        this.hit["ta"] = transactionAffiliation;
+        return this;
+    }
+    // @param String 在交易中使用的优惠券
+ProductAction.prototype.setTransactionCouponCode = function(transactionCouponCode) {
+        this.hit["tcc"] = transactionCouponCode;
+        return this;
+    }
+    // @param String
+ProductAction.prototype.setTransactionId = function(transactionId) {
+        this.hit["ti"] = transactionId;
+        return this;
+    }
+    // @param double  交易收入，指总收入：此值应包含所有运费或税费。
+ProductAction.prototype.setTransactionRevenue = function(revenue) {
+        this.hit["tr"] = revenue;
+        return this;
+    }
+    // @param double 交易运费
+ProductAction.prototype.setTransactionShipping = function(shipping) {
+        this.hit["ts"] = shipping;
+        return this;
+    }
+    // @param double 交易税费
+ProductAction.prototype.setTransactionTax = function(tax) {
     this.hit["tt"] = tax;
     return this;
 }
@@ -720,25 +727,25 @@ function CampaignParams() {
         "gclid": "gclid"
     };
 }
-CampaignParams.prototype.set = function (paramName, paramValue) {
-    if (paramName in this.params_map) {
-        this.params[paramName] = paramValue;
+CampaignParams.prototype.set = function(paramName, paramValue) {
+        if (paramName in this.params_map) {
+            this.params[paramName] = paramValue;
+        }
+        return this;
     }
-    return this;
-}
-// 转换成广告推广连接,形式： https://example.com?utm_XXXX=xxxx&utm_YYYY=yyyy
-CampaignParams.prototype.toUrl = function () {
-    var kv = [];
-    for (var k in this.params) {
-        kv.push([encodeURIComponent(k), encodeURIComponent(this.params[k])].join('='));
-    }
+    // 转换成广告推广连接,形式： https://example.com?utm_XXXX=xxxx&utm_YYYY=yyyy
+CampaignParams.prototype.toUrl = function() {
+        var kv = [];
+        for (var k in this.params) {
+            kv.push([encodeURIComponent(k), encodeURIComponent(this.params[k])].join('='));
+        }
 
-    return 'https://example.com?' + kv.join('&');
-}
-// 从微信小程序Page.onLoad(options) 中解析path中的参数
-// @param Map<String,String> options
-// @param Map<String,String> map 参数映射关系，把其他名字的参数映射到utm_xxxx的形式
-CampaignParams.parseFromPageOptions = function (options, map) {
+        return 'https://example.com?' + kv.join('&');
+    }
+    // 从微信小程序Page.onLoad(options) 中解析path中的参数
+    // @param Map<String,String> options
+    // @param Map<String,String> map 参数映射关系，把其他名字的参数映射到utm_xxxx的形式
+CampaignParams.parseFromPageOptions = function(options, map) {
     options = options || {};
     map = map || {};
 
@@ -759,13 +766,13 @@ CampaignParams.parseFromPageOptions = function (options, map) {
 
     return cp;
 }
-CampaignParams.parseFromUrl = function (url) {
+CampaignParams.parseFromUrl = function(url) {
     var queryString = url.replace(/^[^?]+\?/, '');
     var hit = {};
     var cp = new CampaignParams();
     var map = cp.params_map;
 
-    queryString.split('&').map(function (a) {
+    queryString.split('&').map(function(a) {
         var kv = a.split('=');
         var k = decodeURIComponent(kv[0]);
         if (kv.length != 2 || kv[1] === "" || !map[k]) return;
@@ -779,7 +786,7 @@ CampaignParams.parseFromUrl = function (url) {
 
 // 一些工具函数
 function getUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random() * 16 | 0,
             v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
@@ -794,11 +801,11 @@ function buildUserAgentFromSystemInfo(si) {
         return "Mozilla/5.0 (Linux; U; " + si.system + "; " + si.model + " Build/000000) AppleWebKit/537.36 (KHTML, like Gecko)Version/4.0 Chrome/49.0.0.0 Mobile Safari/537.36 MicroMessenger/" + si.version;
     } else if (!isIPad) {
         // iOS
-        var v = si.system.replace(/^.*?([0-9.]+).*?$/, function (x, y) { return y; }).replace(/\./g, '_');
+        var v = si.system.replace(/^.*?([0-9.]+).*?$/, function(x, y) { return y; }).replace(/\./g, '_');
         return "Mozilla/5.0 (iPhone; CPU iPhone OS " + v + " like Mac OS X) AppleWebKit/602.3.12 (KHTML, like Gecko) Mobile/14C92 MicroMessenger/" + si.version;
     } else {
         // iPad
-        var v = si.system.replace(/^.*?([0-9.]+).*?$/, function (x, y) { return y; }).replace(/\./g, '_');
+        var v = si.system.replace(/^.*?([0-9.]+).*?$/, function(x, y) { return y; }).replace(/\./g, '_');
         return "Mozilla/5.0 (iPad; CPU OS " + v + " like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Mobile/10A406 MicroMessenger/" + si.version;
     }
 }
