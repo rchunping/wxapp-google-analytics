@@ -24,7 +24,7 @@ Google Analytics SDK for Wechat's Mini Program
 
 因为`www.google-analytics.com`域名未备案，无法添加到小程序的request合法域名中，需要自己准备一个已备案的域名做数据转发，比如`ga-proxy.example.com`。
 
-如何配置转发见（[issue 4](https://github.com/rchunping/wxapp-google-analytics/issues/1)）
+如何配置转发见（[issue 4](https://github.com/rchunping/wxapp-google-analytics/issues/4)）
 
 
 > **提醒：** 合法域名每个月只能设置5次。如果只是本地开发测试，可以先不用设置，只要把开发工具里面`开发环境不校验请求域名以及 TLS 版本`勾选一下，等递交审核前再去设置合法域名。
