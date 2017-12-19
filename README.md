@@ -44,6 +44,9 @@ App({
                             .setAppName('小程序名称')
                             .setAppVersion('小程序版本号')
                             .newTracker('UA-XXXXXX-X'); //用你的 Tracking ID 代替
+           
+            //使用自己的合法域名做跟踪数据转发
+            this.tracker.setTrackerServer("https://ga-proxy.example.com"); 
         }
         return this.tracker;
     },
@@ -94,6 +97,9 @@ gaInstance.setAppVersion('小程序版本号'); //设置APP版本号，[可选]
 
 // 创建一个跟踪器 Tracker
 var tracker = gaInstance.newTracker('UA-XXXXXX-X'); // 参数是谷歌统计媒体资源中的 跟踪ID (Tracking ID)
+
+//使用自己的合法域名做跟踪数据转发
+tracker.setTrackerServer("https://ga-proxy.example.com"); 
 ```
 
 多数情况下我们只需要用一个跟踪器，因此建议在 `app.js` 中全局共享一个跟踪器:
@@ -112,6 +118,9 @@ App({
                             .setAppName('小程序名称')
                             .setAppVersion('小程序版本号')
                             .newTracker('UA-XXXXXX-X'); 
+
+            //使用自己的合法域名做跟踪数据转发
+            this.tracker.setTrackerServer("https://ga-proxy.example.com")
         }
         return this.tracker;
     },
