@@ -305,6 +305,33 @@ t.setCampaignParamsOnNextHit(campaignUrl); // 下一个发送的匹配会带上�
 t.send(new HitBuilders.ScreenViewBuilder().build());
 ```
 
+### 跟踪微信小程序的场景值
+
+可以把微信小程序的场景值当成流量来源来进行跟踪。要跟踪场景值需要在`App`的`onLaunch`中处理
+
+```js
+// pages/index/index.js
+var ga = require('path/to/ga.js');
+var CampaignParams = ga.CampaignParams;
+
+App({
+    //...
+    onLaunch: function(options) {
+        if (options && options.scene) {
+            var campaignUrl = CampaignParams.buildFromWeappScene(options.scene).toUrl();
+            var t = getApp().getTracker();
+            t.setCampaignParamsOnNextHit(campaignUrl);
+
+            // 下一个发送的匹配就会带上微信场景信息
+            // t.send(Hit) 
+        }
+    },
+    //...
+})
+```
+
+`CampaignParams.buildFromWeappScene`会把场景值转化为`utm_source`和`utm_medium`参数进行跟踪。
+
 ### 跟踪微信小程序的二维码参数
 
 每个微信小程序可以设置多达10万个自定义参数的二维码，下面介绍如何跟踪每个二维码的推广效果。
