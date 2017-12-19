@@ -10,7 +10,7 @@
 
 function GoogleAnalytics(app) {
     this.app = app; //小程序App实例
-    this.systemInfo = wx.getSystemInfoSync();
+    this.systemInfo = getSystemInfo();
     this.trackers = []; //可以有多个跟踪器，第一个为默认跟踪器
     this.appName = "Mini Program";
     this.appVersion = "unknow";
@@ -103,6 +103,7 @@ Tracker.prototype.setAppVersion = function(appVersion) {
     // @param String
 Tracker.prototype.setCampaignParamsOnNextHit = function(uri) {
     var hit = parseUtmParams(uri);
+    this.next_hit = {}; //clear previous one
     for (var k in hit) {
         this.next_hit[k] = hit[k];
     }
@@ -745,21 +746,85 @@ CampaignParams.prototype.toUrl = function() {
     // @param Map<String,String> options
     // @param Map<String,String> map 参数映射关系，把其他名字的参数映射到utm_xxxx的形式
 CampaignParams.parseFromPageOptions = function(options, map) {
-    options = options || {};
-    map = map || {};
+        options = options || {};
+        map = map || {};
+
+        var cp = new CampaignParams();
+
+        var kv = [];
+
+        for (var k in options) {
+            var v = options[k];
+            if (k in map) {
+                k = map[k];
+            }
+            if (k.match(/^utm_/) || k == "gclid") {
+                cp.set(k, v);
+            }
+        }
+        //console.log(cp);
+
+        return cp;
+    }
+    // 从微信小程序场景值生成
+    // @param int scene
+CampaignParams.buildFromWeappScene = function(scene) {
+    var scenemap = {
+        1001: "发现栏小程序主入口",
+        1005: "顶部搜索框的搜索结果页",
+        1006: "发现栏小程序主入口搜索框的搜索结果页",
+        1007: "单人聊天会话中的小程序消息卡片",
+        1008: "群聊会话中的小程序消息卡片",
+        1011: "扫描二维码",
+        1012: "长按图片识别二维码",
+        1013: "手机相册选取二维码",
+        1014: "小程序模版消息",
+        1017: "前往体验版的入口页",
+        1019: "微信钱包",
+        1020: "公众号profile页相关小程序列表",
+        1022: "聊天顶部置顶小程序入口",
+        1023: "安卓系统桌面图标",
+        1024: "小程序profile页",
+        1025: "扫描一维码",
+        1026: "附近小程序列表",
+        1027: "顶部搜索框搜索结果页“使用过的小程序”列表",
+        1028: "我的卡包",
+        1029: "卡券详情页",
+        1030: "自动化测试下打开小程序",
+        1031: "长按图片识别一维码",
+        1032: "手机相册选取一维码",
+        1034: "微信支付完成页",
+        1035: "公众号自定义菜单",
+        1036: "App 分享消息卡片",
+        1037: "小程序打开小程序",
+        1038: "从另一个小程序返回",
+        1039: "摇电视",
+        1042: "添加好友搜索框的搜索结果页",
+        1043: "公众号模板消息",
+        1044: "带shareTicket的小程序消息卡片",
+        1047: "扫描小程序码",
+        1048: "长按图片识别小程序码",
+        1049: "手机相册选取小程序码",
+        1052: "卡券的适用门店列表",
+        1053: "搜一搜的结果页",
+        1054: "顶部搜索框小程序快捷入口",
+        1056: "音乐播放器菜单",
+        1058: "公众号文章",
+        1059: "体验版小程序绑定邀请页",
+        1064: "微信连Wifi状态栏",
+        1067: "公众号文章广告",
+        1068: "附近小程序列表广告",
+        1072: "二维码收款页面",
+        1073: "客服消息列表下发的小程序消息卡片",
+        1074: "公众号会话下发的小程序消息卡片"
+    };
 
     var cp = new CampaignParams();
 
-    var kv = [];
 
-    for (var k in options) {
-        var v = options[k];
-        if (k in map) {
-            k = map[k];
-        }
-        if (k.match(/^utm_/) || k == "gclid") {
-            cp.set(k, v);
-        }
+    if (scene in scenemap) {
+        cp.set('utm_source', '小程序场景');
+        cp.set('utm_medium', scene + ':' + scenemap[scene]);
     }
     //console.log(cp);
 
@@ -841,6 +906,28 @@ function getInstance(app) {
     }
     return app.defaultGoogleAnalyticsInstance;
 }
+
+var getSystemInfo = function() {
+    if (typeof wx == 'object' && typeof wx.getSystemInfoSync == 'function') {
+        return wx.getSystemInfoSync()
+    }
+    // default
+    return {
+        brand: "unknow",
+        screenWidth: 0,
+        screenHeight: 0,
+        windowWidth: 0,
+        windowHeight: 0,
+        pixelRatio: 1,
+        language: "zh_CN",
+        system: "unknow",
+        model: "unknow",
+        version: "unknow",
+        platform: "unknow",
+        fontSizeSetting: 0,
+        SDKVersion: "unknow",
+    };
+};
 
 module.exports = {
     GoogleAnalytics: {
