@@ -15,8 +15,6 @@ function GoogleAnalytics(app) {
     this.appName = "Mini Program";
     this.appVersion = "unknow";
 
-    this.trackerServer = "https://www.google-analytics.com";
-
     //console.log(this.systemInfo);
 
     var cidKey = '_ga_cid'; // 存用户身份(UUID)
@@ -36,11 +34,6 @@ function GoogleAnalytics(app) {
     );
     this.vp = [this.systemInfo.windowWidth, this.systemInfo.windowHeight].map(function(x) { return x; /*Math.floor(x)*/ }).join('x');
 
-}
-// 设置自定义的跟踪服务器地址，默认是 https://www.google-analytics.com
-GoogleAnalytics.prototype.setTrackerServer = function(server) {
-    this.trackerServer = server;
-    return this;
 }
 GoogleAnalytics.prototype.setAppName = function(appName) {
     this.appName = appName;
@@ -68,6 +61,7 @@ function hit_param_fix(paramName) {
 
 function Tracker(ga, tid) {
     this.ga = ga;
+    this.trackerServer = "https://www.google-analytics.com";
     this.hit = {
         tid: tid || "", // tracking Id
         cd: "" // screenName
@@ -76,6 +70,11 @@ function Tracker(ga, tid) {
 
     this.sending = false; //数据发送状态
     this.send_queue = []; //发送队列
+}
+// 设置自定义的跟踪服务器地址，默认是 https://www.google-analytics.com
+Tracker.prototype.setTrackerServer = function(server) {
+    this.trackerServer = server;
+    return this;
 }
 Tracker.prototype.get = function(key) {
     return this.hit[hit_param_fix(key)];
@@ -237,11 +236,11 @@ Tracker.prototype._do_send = function() {
 
     var payloadData = payloads.join("\r\n");
 
-    var apiUrl = this.ga.trackerServer + '/collect';
+    var apiUrl = this.trackerServer + '/collect';
     if (payloads.length > 1) {
         console.log(["ga.queue.send.batch", payloadData]);
         //使用批量上报接口
-        apiUrl = this.ga.trackerServer + '/batch';
+        apiUrl = this.trackerServer + '/batch';
     } else {
         console.log(["ga.queue.send.collect", payloadData]);
     }

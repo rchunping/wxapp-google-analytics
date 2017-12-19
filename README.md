@@ -9,15 +9,25 @@ Google Analytics SDK for Wechat's Mini Program
 
 #### 1. Google Analytics 设置
 
-在账号下新建媒体资源，跟踪内容选 `移动应用` ,跟踪方法选 `Google Analytics（分析）服务 SDK`, 最后得到 `跟踪ID (Tracking ID)`
+<del>在账号下新建媒体资源，跟踪内容选 `移动应用` ,跟踪方法选 `Google Analytics（分析）服务 SDK`, 最后得到 `跟踪ID (Tracking ID)`</del>
+
+新版已经不能直接创建`移动应用`类型的媒体资源了，因为选了`移动应用`就需要连接Firebase中的移动项目。
+
+解决办法是创建媒体资源的时候，选择`网站`，等创建完成后，新建一个数据视图，这时候可以选择`移动应用`，然后删掉那个默认的视图。这样创建就不需要和Firebase的项目关联了。具体操作可以看 [Add Google Analytics to Android app without Firebase
+](https://stackoverflow.com/questions/45853012/add-google-analytics-to-android-app-without-firebase) ，有详细操作步骤。
 
 #### 2. 在你的微信小程序项目添加 `ga.js` 文件
 
 #### 3. 在微信小程序后台设置request合法域名
 
-把 `www.google-analytics.com` 添加到request合法域名中。
+<del>把 `www.google-analytics.com` 添加到request合法域名中。</del>
 
-> **提醒：** 合法域名每个月只能设置3次。如果只是本地开发测试，可以先不用设置，只要把开发工具里面`开发环境不校验请求域名以及 TLS 版本`勾选一下，等递交审核前再去设置合法域名。
+因为`www.google-analytics.com`域名未备案，无法添加到小程序的request合法域名中，需要自己准备一个已备案的域名做数据转发，比如`ga-proxy.example.com`。
+
+如何配置转发见（[issue 4](https://github.com/rchunping/wxapp-google-analytics/issues/1)）
+
+
+> **提醒：** 合法域名每个月只能设置5次。如果只是本地开发测试，可以先不用设置，只要把开发工具里面`开发环境不校验请求域名以及 TLS 版本`勾选一下，等递交审核前再去设置合法域名。
 
 #### 4. 框架 `app.js` 中修改
 
@@ -386,7 +396,7 @@ Page({
 
 * 完整实现 [Measurement Protocol](https://developers.google.com/analytics/devguides/collection/protocol/v1/reference)
 * 支持多个匹配数据批量上报
-* 因为微信小程序只支持5个`wx.request`并发，为了不影响业务数据的网络请求，数据上报的时候按顺序进行，最多占用一个`wx.request`
+* 因为微信小程序只支持10个`wx.request`并发，为了不影响业务数据的网络请求，数据上报的时候按顺序进行，最多占用一个`wx.request`
 
 ## 已知问题
 
