@@ -186,7 +186,7 @@ t.send(new HitBuilders.ScreenViewBuilder()
     .setCustomDimension(1,"维度1")
     .setCustomDimension(2,"维度2")
     .setCustomMetric(1,100.35)
-    .setCustomMetric(2,200));
+    .setCustomMetric(2,200).build());
 ```
 
 > **提醒：** 自定义维度和指标在所有 `HitBuilder` 上都能设置。
@@ -201,7 +201,7 @@ t.send(new HitBuilders.EventBuilder()
     .setCategory('视频')
     .setAction('点击')
     .setLabel('播放') // 可选
-    .setValue(1)); // 可选
+    .setValue(1).build()); // 可选
 ```
 
 ### 崩溃和异常 Exception
@@ -211,7 +211,7 @@ t.send(new HitBuilders.EventBuilder()
 ```js
 t.send(new HitBuilders.ExceptionBuilder()
     .setDescription('异常描述信息')  
-    .setFatal(false)); // 可选，是否严重错误，默认为 true
+    .setFatal(false).build()); // 可选，是否严重错误，默认为 true
 ```
 
 ### 用户计时 Timing
@@ -223,7 +223,7 @@ t.send(new HitBuilders.TimingBuilder()
     .setCategory('计时器')
     .setValue(63000)
     .setVariable('用户注册')
-    .setLabel('表单'));
+    .setLabel('表单').build());
 ```
 
 ### 会话管理
