@@ -332,6 +332,8 @@ App({
 
 `CampaignParams.buildFromWeappScene`会把场景值转化为`utm_source`和`utm_medium`参数进行跟踪。
 
+谷歌统计后台看到的报告是类似[这样的](#scene-example)
+
 ### 跟踪微信小程序的二维码参数
 
 每个微信小程序可以设置多达10万个自定义参数的二维码，下面介绍如何跟踪每个二维码的推广效果。
@@ -464,3 +466,6 @@ Page({
 ![电子商务概况](screenshot2.png)
 
 ![购物行为](screenshot3.png)
+
+#### scene example
+![微信场景值](screenshot4.png)
