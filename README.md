@@ -310,7 +310,7 @@ t.send(new HitBuilders.ScreenViewBuilder().build());
 可以把微信小程序的场景值当成流量来源来进行跟踪。要跟踪场景值需要在`App`的`onLaunch`中处理
 
 ```js
-// pages/index/index.js
+// app.js
 var ga = require('path/to/ga.js');
 var CampaignParams = ga.CampaignParams;
 
