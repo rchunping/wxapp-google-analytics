@@ -18,6 +18,12 @@ Google Analytics SDK for Wechat's Mini Program
 
 #### 2. 在你的微信小程序项目添加 `ga.js` 文件
 
+如果你使用[WePY](https://github.com/Tencent/wepy)框架来开发小程序，也可以通过npm安装
+
+```bash
+npm install git+https://github.com/rchunping/wxapp-google-analytics.git#v1.0.0
+```
+
 #### 3. 在微信小程序后台设置request合法域名
 
 <del>把 `www.google-analytics.com` 添加到request合法域名中。</del>
