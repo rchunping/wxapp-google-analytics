@@ -1,9 +1,9 @@
-// 
+//
 // 谷歌统计 (Google Analytics) SDK 微信小程序专用
 // Google Analytics SDK for Wechat's Mini Program
-// 
+//
 // 项目地址： https://github.com/rchunping/wxapp-google-analytics
-// 
+//
 // 参考协议：https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
 // 参考Android SDK接口：https://developers.google.com/analytics/devguides/collection/android/v4/
 //
@@ -14,6 +14,7 @@ function GoogleAnalytics(app) {
   this.trackers = []; //可以有多个跟踪器，第一个为默认跟踪器
   this.appName = "Mini Program";
   this.appVersion = "unknow";
+  this.log = true // enable console.log
 
   //console.log(this.systemInfo);
 
@@ -52,6 +53,10 @@ GoogleAnalytics.prototype.newTracker = function (trackingID) {
   this.trackers.push(t);
   return t;
 }
+GoogleAnalytics.prototype.setLog = function (flag) {
+  this.log = !!flag
+  return this
+}
 
 // 支持Measurement Protocol“&”符号语法
 // 兼容兼容Android SDK中 .set('&uid','value') 的写法
@@ -83,7 +88,7 @@ Tracker.prototype.set = function (key, value) {
   this.hit[hit_param_fix(key)] = value;
   return this;
 }
-// @param bool	
+// @param bool
 Tracker.prototype.setAnonymizeIp = function (anonymize) {
   return this.set("aip", anonymize ? 1 : 0);
 }
@@ -180,7 +185,7 @@ Tracker.prototype.send_queue_push = function (ga, hit) {
     data[k] = hit[k];
   }
 
-  console.log(["ga.queue.push", data]);
+  this.ga.log && console.log(["ga.queue.push", data]);
 
   this.send_queue.push([data, new Date()]);
 
@@ -232,18 +237,18 @@ Tracker.prototype._do_send = function () {
     payloads.push(payload);
     this.send_queue.shift();
 
-    console.log(["ga.queue.presend[" + (payloads.length - 1) + "]", data]);
+    this.ga.log && console.log(["ga.queue.presend[" + (payloads.length - 1) + "]", data]);
   }
 
   var payloadData = payloads.join("\r\n");
 
   var apiUrl = this.trackerServer + '/collect';
   if (payloads.length > 1) {
-    console.log(["ga.queue.send.batch", payloadData]);
+    this.ga.log && console.log(["ga.queue.send.batch", payloadData]);
     //使用批量上报接口
     apiUrl = this.trackerServer + '/batch';
   } else {
-    console.log(["ga.queue.send.collect", payloadData]);
+    this.ga.log && console.log(["ga.queue.send.collect", payloadData]);
   }
   wx.request({
     url: apiUrl,
@@ -254,11 +259,11 @@ Tracker.prototype._do_send = function () {
     },
     success: function (res) {
       // success
-      console.log(["ga:success", res]);
+      that.ga.log && console.log(["ga:success", res]);
     },
     fail: function (res) {
       // fail
-      console.log(["ga:failed", res])
+      that.ga.log && console.log(["ga:failed", res])
     },
     complete: function () {
       // complete
@@ -478,7 +483,7 @@ EventBuilder.prototype.build = function () {
 
   return HitBuilder.prototype.build.apply(this, arguments);
 }
-// Social 
+// Social
 // @Deprecated
 function SocialBuilder() {
   HitBuilder.call(this);
@@ -607,7 +612,7 @@ Product.prototype.setPrice = function (price) {
   this.hit["pr"] = price;
   return this;
 }
-// @param int 
+// @param int
 Product.prototype.setQuantity = function (quantity) {
   this.hit["qt"] = quantity;
   return this;
