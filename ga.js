@@ -385,6 +385,11 @@ HitBuilder.prototype.setNewSession = function () {
   this.hit.sc = "start";
   return this;
 }
+// 结束session
+HitBUilder.prototype.setEndSession = function () {
+  this.hit.sc = 'end';
+  return this;
+}
 // 非互动匹配
 // @papam bool
 HitBuilder.prototype.setNonInteraction = function (nonInteraction) {
