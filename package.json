@@ -16,6 +16,7 @@
       "url": "https://github.com/rchunping/wxapp-google-analytics.git"
     },
     "main": "./ga.js",
+    "types": "./ga.d.ts",
     "files": [
       "ga.js"
     ]
