@@ -18,6 +18,7 @@
     "main": "./ga.js",
     "types": "./ga.d.ts",
     "files": [
-      "ga.js"
+      "ga.js",
+      "ga.d.ts"
     ]
 }
