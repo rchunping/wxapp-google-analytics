@@ -386,7 +386,7 @@ HitBuilder.prototype.setNewSession = function () {
   return this;
 }
 // 结束session
-HitBUilder.prototype.setEndSession = function () {
+HitBuilder.prototype.setEndSession = function () {
   this.hit.sc = 'end';
   return this;
 }
