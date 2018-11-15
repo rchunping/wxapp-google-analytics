@@ -177,6 +177,8 @@ declare module 'wxapp-ga' {
 
             public setNewSession(): HitBuilder
 
+            public setEndSession(): HitBuilder
+
             public setNonInteraction(nonInteraction: boolean): HitBuilder
 
             public setHitType(hitType: string): HitBuilder

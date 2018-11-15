@@ -1,24 +1,23 @@
-
 {
     "name": "wxapp-ga",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "description": "Google Analytics SDK for Wechat's Mini Program",
     "keywords": [
-      "Google Analytics",
-      "WeChat",
-      "mini-program",
-      "wepy",
-      "mpvue"
+        "Google Analytics",
+        "WeChat",
+        "mini-program",
+        "wepy",
+        "mpvue"
     ],
     "license": "BSD",
     "repository": {
-      "type": "git",
-      "url": "https://github.com/rchunping/wxapp-google-analytics.git"
+        "type": "git",
+        "url": "https://github.com/rchunping/wxapp-google-analytics.git"
     },
     "main": "./ga.js",
     "types": "./ga.d.ts",
     "files": [
-      "ga.js",
-      "ga.d.ts"
+        "ga.js",
+        "ga.d.ts"
     ]
 }
