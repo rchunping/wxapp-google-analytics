@@ -385,6 +385,11 @@ HitBuilder.prototype.setNewSession = function () {
   this.hit.sc = "start";
   return this;
 }
+// 结束session
+HitBuilder.prototype.setEndSession = function () {
+  this.hit.sc = 'end';
+  return this;
+}
 // 非互动匹配
 // @papam bool
 HitBuilder.prototype.setNonInteraction = function (nonInteraction) {
@@ -807,6 +812,8 @@ CampaignParams.buildFromWeappScene = function (scene) {
     1042: "添加好友搜索框的搜索结果页",
     1043: "公众号模板消息",
     1044: "带shareTicket的小程序消息卡片",
+    1045: "朋友圈广告",
+    1046: "朋友圈广告详情页",
     1047: "扫描小程序码",
     1048: "长按图片识别小程序码",
     1049: "手机相册选取小程序码",
@@ -820,14 +827,26 @@ CampaignParams.buildFromWeappScene = function (scene) {
     1064: "微信连Wifi状态栏",
     1067: "公众号文章广告",
     1068: "附近小程序列表广告",
+    1069: "移动应用",
     1071: "钱包中的银行卡列表页",
     1072: "二维码收款页面",
     1073: "客服消息列表下发的小程序消息卡片",
     1074: "公众号会话下发的小程序消息卡片",
+    1077: "摇周边",
     1078: "连Wi-Fi成功页",
+    1079: "微信游戏中心",
+    1081: "客服消息下发的文字链",
+    1082: "公众号会话下发的文字链",
+    1084: "朋友圈广告原生页",
     1089: "微信聊天主界面下拉",
     1090: "长按小程序右上角菜单唤出最近使用历史",
-    1092: "城市服务入口"
+    1091: "公众号文章商品卡片",
+    1092: "城市服务入口",
+    1095: "小程序广告组件",
+    1096: "聊天记录",
+    1097: "微信支付签约页",
+    1099: "页面内嵌插件",
+    1102: "公众号 profile 页服务预览",
   };
 
   var cp = new CampaignParams();
