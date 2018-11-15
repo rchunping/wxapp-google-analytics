@@ -21,7 +21,7 @@ Google Analytics SDK for Wechat's Mini Program
 如果你使用[WePY](https://github.com/Tencent/wepy)或者[mpvue](https://github.com/Meituan-Dianping/mpvue)框架来开发小程序，也可以通过npm安装
 
 ```bash
-npm install git+https://github.com/rchunping/wxapp-google-analytics.git#v1.1.0
+npm install git+https://github.com/rchunping/wxapp-google-analytics.git#v1.2.0
 ```
 
 #### 3. 在微信小程序后台设置request合法域名
